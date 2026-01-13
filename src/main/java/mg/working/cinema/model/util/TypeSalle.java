@@ -1,4 +1,4 @@
-package mg.working.cinema.model;
+package mg.working.cinema.model.util;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

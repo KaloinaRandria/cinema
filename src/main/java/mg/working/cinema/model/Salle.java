@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mg.working.cinema.model.util.TypeSalle;
 import mg.working.cinema.service.util.IdGenerator;
 
 @Getter
