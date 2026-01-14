@@ -255,3 +255,183 @@ CREATE INDEX IF NOT EXISTS idx_paiement_statut      ON paiement(statut);
 -- Le plus simple et courant : vérifier en code (service) avant insertion.
 -- Si tu veux du 100% DB, on peut ajouter une colonne id_seance dans reservation_siege
 -- (dénormalisation contrôlée) + UNIQUE(id_seance, id_siege).
+
+
+INSERT INTO genre (id_genre, libelle, code) VALUES
+                                                ('GEN001', 'Action', 'ACT'),
+                                                ('GEN002', 'Comédie', 'COM'),
+                                                ('GEN003', 'Drame', 'DRM'),
+                                                ('GEN004', 'Science-Fiction', 'SF'),
+                                                ('GEN005', 'Horreur', 'HOR'),
+                                                ('GEN006', 'Animation', 'ANI'),
+                                                ('GEN007', 'Romance', 'ROM');
+
+
+INSERT INTO film (id_film, titre, description, duree, id_genre, date_sortie) VALUES
+                                                                                 (
+                                                                                     'FIL001',
+                                                                                     'Avengers: Infinity War',
+                                                                                     'Les Avengers affrontent Thanos pour sauver l univers.',
+                                                                                     149,
+                                                                                     'GEN001',
+                                                                                     '2018-04-27'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL002',
+                                                                                     'Interstellar',
+                                                                                     'Un voyage spatial pour sauver l humanité.',
+                                                                                     169,
+                                                                                     'GEN004',
+                                                                                     '2014-11-07'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL003',
+                                                                                     'Le Dîner de Cons',
+                                                                                     'Une comédie culte française.',
+                                                                                     80,
+                                                                                     'GEN002',
+                                                                                     '1998-04-15'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL004',
+                                                                                     'Titanic',
+                                                                                     'Une histoire d amour tragique à bord du Titanic.',
+                                                                                     195,
+                                                                                     'GEN007',
+                                                                                     '1997-12-19'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL005',
+                                                                                     'Joker',
+                                                                                     'L origine sombre du célèbre ennemi de Batman.',
+                                                                                     122,
+                                                                                     'GEN003',
+                                                                                     '2019-10-04'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL006',
+                                                                                     'Conjuring',
+                                                                                     'Des phénomènes paranormaux terrifiants.',
+                                                                                     112,
+                                                                                     'GEN005',
+                                                                                     '2013-07-19'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL007',
+                                                                                     'Toy Story',
+                                                                                     'Les jouets prennent vie quand les humains ont le dos tourné.',
+                                                                                     81,
+                                                                                     'GEN006',
+                                                                                     '1995-11-22'
+                                                                                 );
+INSERT INTO film (id_film, titre, description, duree, id_genre, date_sortie) VALUES
+                                                                                 (
+                                                                                     'FIL008',
+                                                                                     'Inception',
+                                                                                     'Un voleur infiltre les rêves pour y implanter une idée.',
+                                                                                     148,
+                                                                                     'GEN004',
+                                                                                     '2010-07-16'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL009',
+                                                                                     'The Dark Knight',
+                                                                                     'Batman affronte le Joker, un criminel anarchiste.',
+                                                                                     152,
+                                                                                     'GEN001',
+                                                                                     '2008-07-18'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL010',
+                                                                                     'Forrest Gump',
+                                                                                     'La vie extraordinaire d un homme simple au destin incroyable.',
+                                                                                     142,
+                                                                                     'GEN003',
+                                                                                     '1994-07-06'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL011',
+                                                                                     'Parasite',
+                                                                                     'Une famille pauvre s infiltre dans la vie d une famille riche.',
+                                                                                     132,
+                                                                                     'GEN003',
+                                                                                     '2019-05-30'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL012',
+                                                                                     'Gladiator',
+                                                                                     'Un général romain trahi devient gladiateur.',
+                                                                                     155,
+                                                                                     'GEN001',
+                                                                                     '2000-05-05'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL013',
+                                                                                     'La La Land',
+                                                                                     'Une histoire d amour entre un musicien et une actrice à Los Angeles.',
+                                                                                     128,
+                                                                                     'GEN007',
+                                                                                     '2016-12-09'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL014',
+                                                                                     'Ça',
+                                                                                     'Une entité maléfique terrorise une petite ville.',
+                                                                                     135,
+                                                                                     'GEN005',
+                                                                                     '2017-09-08'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL015',
+                                                                                     'Spider-Man: No Way Home',
+                                                                                     'Peter Parker affronte les conséquences de son identité révélée.',
+                                                                                     148,
+                                                                                     'GEN001',
+                                                                                     '2021-12-17'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL016',
+                                                                                     'Le Roi Lion',
+                                                                                     'Un jeune lion doit reprendre sa place sur le trône.',
+                                                                                     88,
+                                                                                     'GEN006',
+                                                                                     '1994-06-15'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL017',
+                                                                                     'Matrix',
+                                                                                     'La réalité n est qu une illusion contrôlée par des machines.',
+                                                                                     136,
+                                                                                     'GEN004',
+                                                                                     '1999-03-31'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL018',
+                                                                                     'Shining',
+                                                                                     'Un écrivain sombre dans la folie dans un hôtel isolé.',
+                                                                                     146,
+                                                                                     'GEN005',
+                                                                                     '1980-05-23'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL019',
+                                                                                     'Pulp Fiction',
+                                                                                     'Des histoires criminelles entremêlées à Los Angeles.',
+                                                                                     154,
+                                                                                     'GEN003',
+                                                                                     '1994-10-14'
+                                                                                 ),
+                                                                                 (
+                                                                                     'FIL020',
+                                                                                     'Coco',
+                                                                                     'Un jeune garçon découvre le monde des morts.',
+                                                                                     105,
+                                                                                     'GEN006',
+                                                                                     '2017-11-22'
+                                                                                 );
+
+
+
+SELECT f.id_film, f.titre, g.libelle AS genre, f.duree, f.date_sortie
+FROM film f
+         JOIN genre g ON g.id_genre = f.id_genre;
