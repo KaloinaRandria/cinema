@@ -430,8 +430,45 @@ INSERT INTO film (id_film, titre, description, duree, id_genre, date_sortie) VAL
                                                                                      '2017-11-22'
                                                                                  );
 
+INSERT INTO type_salle (id_type_salle, libelle, code) VALUES
+                                                          ('TSL001', 'Salle Standard', 'STD'),
+                                                          ('TSL002', 'Salle VIP', 'VIP'),
+                                                          ('TSL003', 'Salle IMAX', 'IMX'),
+                                                          ('TSL004', 'Salle 3D', '3D'),
+                                                          ('TSL005', 'Salle 4DX', '4DX');
+
+
+INSERT INTO salle (id_salle, nom, capacite_max, id_type_salle) VALUES
+                                                                   ('SAL001', 'Salle A', 120, 'TSL001'),
+                                                                   ('SAL002', 'Salle B', 80,  'TSL001'),
+                                                                   ('SAL003', 'Salle VIP 1', 40, 'TSL002'),
+                                                                   ('SAL004', 'Salle IMAX', 200, 'TSL003'),
+                                                                   ('SAL005', 'Salle 3D', 100, 'TSL004');
+
+INSERT INTO siege (id_siege, rangee, numero, id_salle) VALUES
+                                                           ('SIG001','A',1,'SAL001'),('SIG002','A',2,'SAL001'),('SIG003','A',3,'SAL001'),('SIG004','A',4,'SAL001'),('SIG005','A',5,'SAL001'),
+                                                           ('SIG006','B',1,'SAL001'),('SIG007','B',2,'SAL001'),('SIG008','B',3,'SAL001'),('SIG009','B',4,'SAL001'),('SIG010','B',5,'SAL001'),
+                                                           ('SIG011','C',1,'SAL001'),('SIG012','C',2,'SAL001'),('SIG013','C',3,'SAL001'),('SIG014','C',4,'SAL001'),('SIG015','C',5,'SAL001'),
+                                                           ('SIG016','D',1,'SAL001'),('SIG017','D',2,'SAL001'),('SIG018','D',3,'SAL001'),('SIG019','D',4,'SAL001'),('SIG020','D',5,'SAL001'),
+                                                           ('SIG021','E',1,'SAL001'),('SIG022','E',2,'SAL001'),('SIG023','E',3,'SAL001'),('SIG024','E',4,'SAL001'),('SIG025','E',5,'SAL001');
+
+INSERT INTO siege (id_siege, rangee, numero, id_salle) VALUES
+                                                           ('SIG026','A',1,'SAL003'),('SIG027','A',2,'SAL003'),
+                                                           ('SIG028','B',1,'SAL003'),('SIG029','B',2,'SAL003'),
+                                                           ('SIG030','C',1,'SAL003'),('SIG031','C',2,'SAL003'),
+                                                           ('SIG032','D',1,'SAL003'),('SIG033','D',2,'SAL003');
 
 
 SELECT f.id_film, f.titre, g.libelle AS genre, f.duree, f.date_sortie
 FROM film f
          JOIN genre g ON g.id_genre = f.id_genre;
+
+
+SELECT s.nom, s.capacite_max, t.libelle AS type
+FROM salle s
+         JOIN type_salle t ON t.id_type_salle = s.id_type_salle;
+
+SELECT s.nom, COUNT(si.id_siege) AS nb_sieges
+FROM siege si
+         JOIN salle s ON s.id_salle = si.id_salle
+GROUP BY s.nom;

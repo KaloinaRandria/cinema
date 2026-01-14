@@ -15,6 +15,14 @@
     transform: scale(1.03);
 }
 
+.film-link {
+    color: inherit;
+}
+.film-link:hover {
+    text-decoration: underline;
+}
+
+
 /* ===== TABLEAU ===== */
 
 /* Appliquer la même font partout dans DataTables */

@@ -46,7 +46,13 @@
 
                         <tbody>
                         <tr th:each="f : ${films}">
-                            <td th:text="${f.id}"></td>
+                            <td>
+                                <a th:href="@{/film/{id}(id=${f.id})}"
+                                   th:text="${f.id}"
+                                   class="text-decoration-none fw-semibold">
+                                </a>
+                            </td>
+
                             <td th:text="${f.titre}"></td>
                             <td class="text-end" th:text="${f.duree}"></td>
                             <td th:text="${f.genre.libelle}"></td>
