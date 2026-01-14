@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mg.working.cinema.model.Salle;
+import mg.working.cinema.service.util.IdGenerator;
 
 import java.time.LocalDateTime;
 
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
         sequenceName = "s_seance",
         allocationSize = 1)
 public class Seance {
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "s_seance") @Column(name = "id_seance")
+    @Id @Column(name = "id_seance")
     String id;
     LocalDateTime debut;
     LocalDateTime fin;
@@ -29,4 +30,11 @@ public class Seance {
     Film film;
     @ManyToOne @JoinColumn(name = "id_salle", referencedColumnName = "id_salle", nullable = false)
     Salle salle;
+
+    public Seance(String id) {
+        this.id = id;
+    }
+    public void setId(IdGenerator idGenerator) {
+        this.id = idGenerator.generateId("SEA", "s_seance");
+    }
 }

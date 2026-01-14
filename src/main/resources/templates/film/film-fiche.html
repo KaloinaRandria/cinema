@@ -9,55 +9,6 @@
     <th:block th:insert="~{fragment/load_script :: load_script}"></th:block>
 
     <!-- Style local léger (tu peux déplacer vers ton css global) -->
-    <style>
-        .film-hero {
-            border-radius: 18px;
-            background: linear-gradient(135deg, rgba(0,16,81,1) 0%, rgba(0,67,156,1) 100%);
-            color: #fff;
-            overflow: hidden;
-            position: relative;
-        }
-        .film-hero:before{
-            content:"";
-            position:absolute;
-            inset:-80px;
-            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.12), transparent 55%),
-            radial-gradient(circle at 80% 70%, rgba(255,255,255,.10), transparent 60%);
-            transform: rotate(8deg);
-        }
-        .film-hero-content { position: relative; z-index: 1; }
-
-        .badge-soft {
-            background: rgba(255,255,255,.14);
-            border: 1px solid rgba(255,255,255,.22);
-            color: #fff;
-        }
-
-        .info-card {
-            border-radius: 18px;
-        }
-
-        .film-kpi {
-            border-radius: 16px;
-            background: #ffffff;
-            border: 1px solid rgba(0,0,0,.08);
-            color: #001051; /* TEXTE FONCÉ */
-            min-width: 120px;
-        }
-
-        .film-kpi .text-muted {
-            color: #6c757d !important;
-        }
-
-
-        .desc-box {
-            background: #ffffff;
-            border: 1px solid rgba(0,0,0,.06);
-            border-radius: 16px;
-        }
-
-        .label-muted { color: rgba(255,255,255,.75); }
-    </style>
 </head>
 
 <body>

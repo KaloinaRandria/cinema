@@ -1,10 +1,432 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title th:text="'Réserver des sièges - ' + ${seance.id}">Réserver des sièges</title>
+    <th:block th:insert="~{fragment/load_css :: load_css}"></th:block>
+    <th:block th:insert="~{fragment/font :: font}"></th:block>
+    <th:block th:insert="~{fragment/load_script :: load_script}"></th:block>
+
+    <style>
+        .hero {
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(0,16,81,1) 0%, rgba(0,67,156,1) 100%);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero:before{
+            content:"";
+            position:absolute;
+            inset:-80px;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.12), transparent 55%),
+            radial-gradient(circle at 80% 70%, rgba(255,255,255,.10), transparent 60%);
+            transform: rotate(8deg);
+        }
+        .hero-content{ position: relative; z-index: 1; }
+
+        .card-rounded { border-radius: 18px; }
+        .screen {
+            border-radius: 14px;
+            background: #0b1b5a;
+            color: #fff;
+            text-align: center;
+            padding: 10px 12px;
+            letter-spacing: .08em;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: 0 10px 24px rgba(0,0,0,.15);
+        }
+
+        .seat-map {
+            overflow-x: auto;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,.06);
+            background: #fff;
+        }
+
+        .seat-row {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 12px;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .row-label {
+            font-weight: 700;
+            color: #001051;
+        }
+
+        .seats {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 44px;
+            gap: 10px;
+            justify-content: start;
+        }
+
+        .seat {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            cursor: pointer;
+            user-select: none;
+            background: #f8fafc;
+            color: #001051;
+            transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
+        }
+        .seat:hover { transform: translateY(-1px); box-shadow: 0 8px 16px rgba(0,0,0,.08); }
+
+        .seat.occupied {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+
+        .seat.selected {
+            background: #22c55e;
+            color: #fff;
+            border-color: rgba(0,0,0,.05);
+        }
+
+        .legend {
+            display:flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .legend-item { display:flex; gap:8px; align-items:center; color:#334155; }
+        .legend-box {
+            width: 18px; height: 18px; border-radius: 6px;
+            border: 1px solid rgba(0,0,0,.12);
+            background: #f8fafc;
+        }
+        .legend-box.selected { background:#22c55e; border-color: rgba(0,0,0,.05); }
+        .legend-box.occupied { background:#e9ecef; border-style:dashed; }
+
+        .pill {
+            border-radius: 999px;
+            padding: .45rem .85rem;
+            background: #f8fafc;
+            border: 1px solid rgba(0,0,0,.06);
+            color: #0f172a;
+        }
+
+        .sticky-box {
+            position: sticky;
+            top: 12px;
+        }
+    </style>
 </head>
+
 <body>
+<div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <section>
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold text-gradient-blue">
+                <i class="fas fa-ticket-alt me-3 icon-gradient-blue"></i> Réserver des sièges
+            </h1>
+            <div class="d-flex gap-2 flex-wrap">
+                <a th:href="@{/seance/{id}(id=${seance.id})}" class="btn btn-gradient-blue">
+                    <i class="fas fa-arrow-left me-1"></i>Retour séance
+                </a>
+                <a th:href="@{/seance/list}" class="btn btn-secondary">
+                    <i class="fas fa-list me-1"></i>Liste des séances
+                </a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragment/load_pop_up :: pop_up}"></div>
+
+        <!-- Hero séance -->
+        <div class="hero shadow-lg mb-4">
+            <div class="p-4 p-md-4 hero-content">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                    <div>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <span class="badge" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);">
+                                <i class="fas fa-hashtag me-2"></i><span th:text="${seance.id}">SEA001</span>
+                            </span>
+                            <span class="badge" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);">
+                                <i class="fas fa-film me-2"></i><span th:text="${seance.film.titre}">Film</span>
+                            </span>
+                            <span class="badge" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);">
+                                <i class="fas fa-door-open me-2"></i><span th:text="${seance.salle.nom}">Salle</span>
+                            </span>
+                            <span class="badge" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);">
+                                <i class="far fa-calendar-alt me-2"></i>
+                                <span th:text="${#temporals.format(seance.debut,'dd/MM/yyyy HH:mm')}">Date</span>
+                            </span>
+                        </div>
+                        <div style="opacity:.85">
+                            <i class="fas fa-money-bill-wave me-2"></i>
+                            <span th:text="${seance.prix}">12000</span> Ar / siège
+                        </div>
+                    </div>
+
+                    <div class="legend align-self-md-end">
+                        <div class="legend-item"><span class="legend-box"></span>Libre</div>
+                        <div class="legend-item"><span class="legend-box selected"></span>Sélectionné</div>
+                        <div class="legend-item"><span class="legend-box occupied"></span>Occupé</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Plan de salle -->
+            <div class="col-12 col-lg-8">
+                <div class="card card-rounded shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <div class="screen mb-3">
+                            <i class="fas fa-video me-2"></i>Écran
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="pill"><strong>Salle :</strong> <span th:text="${salle.nom}">Salle A</span></span>
+                            <span class="pill"><strong>Type :</strong> <span th:text="${salle.typeSalle.libelle}">Standard</span></span>
+                            <span class="pill"><strong>Max :</strong> <span th:text="${salle.capaciteMax}">120</span></span>
+                            <span class="pill"><strong>Max sélection :</strong> <span id="maxSeatsLabel">6</span></span>
+                        </div>
+
+                        <!-- Map -->
+                        <div class="seat-map" id="seatMap">
+                            <!-- On construit la map depuis la liste 'sieges' -->
+                            <!-- On groupe par rangée via JS (plus simple côté template) -->
+                            <div id="seatMapContent">
+                                <!-- Rempli par JS -->
+                            </div>
+                        </div>
+
+                        <small class="text-muted d-block mt-3">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Les sièges grisés sont déjà réservés pour cette séance.
+                        </small>
+
+                        <!-- Données côté client -->
+                        <script id="seatsData" type="application/json"
+                                th:text="${#objects.toJson(sieges)}"></script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Récap + validation -->
+            <div class="col-12 col-lg-4">
+                <div class="sticky-box">
+                    <div class="card card-rounded shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-2">
+                                <i class="fas fa-receipt me-2 icon-gradient-blue"></i>Récapitulatif
+                            </h5>
+                            <p class="text-muted mb-3">Vérifie avant de confirmer.</p>
+
+                            <div class="mb-3">
+                                <div class="text-muted small mb-1">Sièges sélectionnés</div>
+                                <div id="selectedSeatsText" class="fw-semibold">Aucun</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="text-muted small mb-1">Nombre</div>
+                                <div class="fw-semibold"><span id="selectedCount">0</span> siège(s)</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="text-muted small mb-1">Total</div>
+                                <div class="fw-bold fs-4">
+                                    <span id="totalPrice">0</span> <span class="text-muted fs-6">Ar</span>
+                                </div>
+                            </div>
+
+                            <!-- Form POST -->
+                            <form th:action="@{/reservation/create}" method="post" id="reservationForm">
+                                <input type="hidden" name="idSeance" th:value="${seance.id}">
+                                <div id="seatInputs"></div>
+
+                                <button type="submit" class="btn btn-gradient-green w-100" id="btnConfirm" disabled>
+                                    <i class="fas fa-check-circle me-1"></i>Confirmer la réservation
+                                </button>
+
+                                <button type="button" class="btn btn-outline-secondary w-100 mt-2" id="btnClear">
+                                    <i class="fas fa-undo me-1"></i>Réinitialiser
+                                </button>
+                            </form>
+
+                            <div class="alert alert-warning mt-3 d-none" id="limitAlert" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Vous avez atteint la limite de sièges sélectionnables.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-rounded shadow-sm border-0 mt-3">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-shield-alt me-2 icon-gradient-blue"></i>Conseil
+                            </h6>
+                            <p class="text-muted mb-0">
+                                Si vous sélectionnez plusieurs sièges, choisissez-les sur la même rangée pour plus de confort.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+<script th:inline="none">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', async function () {
+        const MAX_SELECT = 6; // <-- change ici si besoin
+        document.getElementById('maxSeatsLabel').textContent = MAX_SELECT;
+
+        const seanceId = /*[[${seance.id}]]*/ "SEA001";
+        const prix = Number(/*[[${seance.prix}]]*/ 12000);
+
+        const selected = new Map(); // seatId -> {rangee, numero}
+        const seatInputs = document.getElementById('seatInputs');
+        const btnConfirm = document.getElementById('btnConfirm');
+        const btnClear = document.getElementById('btnClear');
+        const limitAlert = document.getElementById('limitAlert');
+
+        // Lire sièges depuis JSON injecté
+        const seatsJson = document.getElementById('seatsData').textContent;
+        let allSeats = [];
+        try { allSeats = JSON.parse(seatsJson); } catch(e) { allSeats = []; }
+
+        // Récupérer sièges occupés via API
+        let occupiedSet = new Set();
+        try {
+            const resp = await fetch(`/api/seance/${encodeURIComponent(seanceId)}/occupied-seats`);
+            if (resp.ok) {
+                const occupiedIds = await resp.json(); // ["SIG001","SIG005"...]
+                occupiedSet = new Set(occupiedIds || []);
+            }
+        } catch (e) {
+            // si l'API n'est pas prête, tout reste libre
+            occupiedSet = new Set();
+        }
+
+        // Grouper par rangée puis trier par numéro
+        const byRow = {};
+        allSeats.forEach(s => {
+            const r = s.rangee;
+            if (!byRow[r]) byRow[r] = [];
+            byRow[r].push(s);
+        });
+
+        const rowKeys = Object.keys(byRow).sort((a,b) => a.localeCompare(b));
+        rowKeys.forEach(r => byRow[r].sort((a,b) => (a.numero ?? 0) - (b.numero ?? 0)));
+
+        // Render map
+        const seatMapContent = document.getElementById('seatMapContent');
+        seatMapContent.innerHTML = '';
+
+        rowKeys.forEach(r => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'seat-row';
+
+            const label = document.createElement('div');
+            label.className = 'row-label';
+            label.textContent = `Rangée ${r}`;
+            rowDiv.appendChild(label);
+
+            const seatsDiv = document.createElement('div');
+            seatsDiv.className = 'seats';
+
+            byRow[r].forEach(s => {
+                const seatId = s.id;
+                const seat = document.createElement('div');
+                seat.className = 'seat';
+                seat.textContent = s.numero;
+
+                seat.dataset.seatId = seatId;
+                seat.dataset.rangee = s.rangee;
+                seat.dataset.numero = s.numero;
+
+                if (occupiedSet.has(seatId)) {
+                    seat.classList.add('occupied');
+                }
+
+                seat.addEventListener('click', () => {
+                    if (seat.classList.contains('occupied')) return;
+
+                    // deselect
+                    if (seat.classList.contains('selected')) {
+                        seat.classList.remove('selected');
+                        selected.delete(seatId);
+                        limitAlert.classList.add('d-none');
+                        refreshRecap();
+                        return;
+                    }
+
+                    // select (limite)
+                    if (selected.size >= MAX_SELECT) {
+                        limitAlert.classList.remove('d-none');
+                        return;
+                    }
+
+                    seat.classList.add('selected');
+                    selected.set(seatId, { rangee: s.rangee, numero: s.numero });
+                    limitAlert.classList.add('d-none');
+                    refreshRecap();
+                });
+
+                seatsDiv.appendChild(seat);
+            });
+
+            rowDiv.appendChild(seatsDiv);
+            seatMapContent.appendChild(rowDiv);
+        });
+
+        function refreshRecap() {
+            // text recap
+            const list = Array.from(selected.values())
+                .sort((a,b) => a.rangee.localeCompare(b.rangee) || a.numero - b.numero)
+                .map(x => `${x.rangee}${x.numero}`);
+
+            document.getElementById('selectedSeatsText').textContent = list.length ? list.join(', ') : 'Aucun';
+            document.getElementById('selectedCount').textContent = String(list.length);
+            document.getElementById('totalPrice').textContent = String(list.length * prix);
+
+            // hidden inputs
+            seatInputs.innerHTML = '';
+            Array.from(selected.keys()).forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'seatIds[]';
+                input.value = id;
+                seatInputs.appendChild(input);
+            });
+
+            btnConfirm.disabled = (selected.size === 0);
+        }
+
+        btnClear.addEventListener('click', () => {
+            selected.clear();
+            limitAlert.classList.add('d-none');
+            document.querySelectorAll('.seat.selected').forEach(x => x.classList.remove('selected'));
+            refreshRecap();
+        });
+
+        refreshRecap();
+    });
+    /*]]>*/
+</script>
 
 </body>
 </html>

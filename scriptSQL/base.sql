@@ -459,6 +459,96 @@ INSERT INTO siege (id_siege, rangee, numero, id_salle) VALUES
                                                            ('SIG032','D',1,'SAL003'),('SIG033','D',2,'SAL003');
 
 
+
+INSERT INTO seance (id_seance, debut, fin, prix, id_film, id_salle) VALUES
+
+-- 🎬 Avengers: Infinity War (Salle IMAX)
+('SEA001',
+ '2026-02-01 14:00:00',
+ '2026-02-01 16:29:00',
+ 15000,
+ 'FIL001',
+ 'SAL004'
+),
+
+('SEA002',
+ '2026-02-01 18:00:00',
+ '2026-02-01 20:29:00',
+ 18000,
+ 'FIL001',
+ 'SAL004'
+),
+
+-- 🚀 Interstellar (Salle A)
+('SEA003',
+ '2026-02-02 15:00:00',
+ '2026-02-02 17:49:00',
+ 12000,
+ 'FIL002',
+ 'SAL001'
+),
+
+('SEA004',
+ '2026-02-02 19:00:00',
+ '2026-02-02 21:49:00',
+ 12000,
+ 'FIL002',
+ 'SAL001'
+),
+
+-- 😂 Le Dîner de Cons (Salle B)
+('SEA005',
+ '2026-02-03 16:00:00',
+ '2026-02-03 17:20:00',
+ 8000,
+ 'FIL003',
+ 'SAL002'
+),
+
+('SEA006',
+ '2026-02-03 18:30:00',
+ '2026-02-03 19:50:00',
+ 8000,
+ 'FIL003',
+ 'SAL002'
+),
+
+-- ❤️ Titanic (Salle VIP)
+('SEA007',
+ '2026-02-04 17:00:00',
+ '2026-02-04 20:15:00',
+ 20000,
+ 'FIL004',
+ 'SAL003'
+),
+
+-- 🃏 Joker (Salle A)
+('SEA008',
+ '2026-02-05 18:00:00',
+ '2026-02-05 20:02:00',
+ 11000,
+ 'FIL005',
+ 'SAL001'
+),
+
+-- 👻 Conjuring (Salle 3D)
+('SEA009',
+ '2026-02-06 19:30:00',
+ '2026-02-06 21:22:00',
+ 13000,
+ 'FIL006',
+ 'SAL005'
+),
+
+-- 🧸 Toy Story (Séance enfant – Salle A)
+('SEA010',
+ '2026-02-07 10:00:00',
+ '2026-02-07 11:21:00',
+ 6000,
+ 'FIL007',
+ 'SAL001'
+);
+
 SELECT f.id_film, f.titre, g.libelle AS genre, f.duree, f.date_sortie
 FROM film f
          JOIN genre g ON g.id_genre = f.id_genre;
@@ -472,3 +562,15 @@ SELECT s.nom, COUNT(si.id_siege) AS nb_sieges
 FROM siege si
          JOIN salle s ON s.id_salle = si.id_salle
 GROUP BY s.nom;
+
+SELECT
+    s.id_seance,
+    f.titre AS film,
+    sa.nom AS salle,
+    s.debut,
+    s.fin,
+    s.prix
+FROM seance s
+         JOIN film f ON f.id_film = s.id_film
+         JOIN salle sa ON sa.id_salle = s.id_salle
+ORDER BY s.debut;

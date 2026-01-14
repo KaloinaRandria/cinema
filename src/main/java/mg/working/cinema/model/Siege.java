@@ -29,4 +29,8 @@ public class Siege {
     public void setId(IdGenerator idGenerator) {
         this.id = idGenerator.generateId("SIG", "s_siege");
     }
+
+    public Siege(String id) {
+        this.id = id;
+    }
 }
