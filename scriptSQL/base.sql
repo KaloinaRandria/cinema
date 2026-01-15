@@ -574,3 +574,51 @@ FROM seance s
          JOIN film f ON f.id_film = s.id_film
          JOIN salle sa ON sa.id_salle = s.id_salle
 ORDER BY s.debut;
+
+
+UPDATE siege
+SET id_type_siege = 'TSI2'
+WHERE id_salle = 'SAL001'
+  AND rangee IN ('A', 'B', 'C');
+
+UPDATE siege
+SET id_type_siege = 'TSI1'
+WHERE id_salle = 'SAL001'
+  AND rangee IN ('D', 'E');
+
+
+UPDATE siege
+SET id_type_siege = 'TSI1'
+WHERE id_salle = 'SAL003';
+
+
+SELECT *
+FROM siege
+WHERE id_salle IN ('SAL001', 'SAL003')
+ORDER BY id_salle, rangee, numero;
+
+
+
+-- 100 sièges pour SAL001 :
+-- 10 VIP (TSI3), 20 Premium (TSI1), 70 Standard (TSI2)
+
+INSERT INTO siege (id_siege, rangee, numero, id_salle, id_type_siege)
+SELECT
+    'SIG' || LPAD(gs::text, 3, '0') AS id_siege,
+
+    -- Rangées : A à J (10 rangées) -> 10 sièges par rangée
+    CHR(64 + ((gs - 1) / 10) + 1) AS rangee,
+
+    -- Numéro dans la rangée : 1 à 10
+    ((gs - 1) % 10) + 1 AS numero,
+
+    'SAL001' AS id_salle,
+
+    -- Répartition : 1..10 VIP, 11..30 Premium, 31..100 Standard
+    CASE
+        WHEN gs BETWEEN 1 AND 10 THEN 'TSI3'      -- VIP
+        WHEN gs BETWEEN 11 AND 30 THEN 'TSI1'     -- Premium
+        ELSE 'TSI2'                               -- Standard
+        END AS id_type_siege
+
+FROM generate_series(1, 100) gs;

@@ -110,127 +110,172 @@
             </div>
         </div>
 
-<!--    Demande de Materiel-->
+        <!-- SALLES -->
         <div class="accordion-item bg-transparent border-0">
-            <h2 class="accordion-header">
+            <h2 class="accordion-header" id="headingSalles">
                 <button class="accordion-button bg-transparent text-start text-white sidebar-button collapsed"
                         type="button"
                         data-bs-toggle="collapse"
-                        data-bs-target="#collapseDemande"
+                        data-bs-target="#collapseSalles"
                         aria-expanded="false"
-                        aria-controls="collapseDemande"
-                        th:classappend="${currentUri.contains('/demande') ? '' : 'collapsed'}">
-                    <i class="fas fa-file-alt me-3"></i> Demande de Matériel
-                </button>
-            </h2>
-            <div id="collapseDemande"
-                 class="accordion-collapse collapse"
-                 aria-labelledby="headingDemande"
-                 data-bs-parent="#sidebarAccordion"
-                 th:classappend="${currentUri.contains('/demande') ? 'show' : ''}">
-                <div class="accordion-body p-0">
-                    <ul class="nav flex-column px-3">
-                        <li>
-                            <a class="nav-link text-white sidebar-sub" sec:authorize="hasAnyRole('ADMIN','MOYENS_GENERAUX')"
-                               th:href="@{/demande/list}"
-                               th:classappend="${currentUri == '/demande/list' ? 'active' : ''}">
-                                Liste
-                            </a>
-                        </li>
-                        <li>
-                            <a class="nav-link text-white sidebar-sub"
-                               th:href="@{/demande/add}"
-                               th:classappend="${currentUri == '/demande/add' ? 'active' : ''}">
-                                Ajout Demande
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bon de Livraison -->
-        <div class="accordion-item bg-transparent border-0">
-            <h2 class="accordion-header">
-                <button class="accordion-button bg-transparent text-start text-white sidebar-button collapsed"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#collapseBL"
-                        aria-expanded="false"
-                        aria-controls="collapseBL"
-                        sec:authorize="hasAnyRole('ADMIN','MOYENS_GENERAUX')"
-                        th:classappend="${currentUri.contains('/bonlivraison') ? '' : 'collapsed'}">
-                    <i class="fas fa-clipboard-list me-3"></i> Bon de Livraison
+                        aria-controls="collapseSalles"
+                        th:classappend="${currentUri.contains('/salle') ? '' : 'collapsed'}">
+                    <i class="fas fa-door-open me-3"></i> Salle
                 </button>
             </h2>
 
-            <div id="collapseBL"
+            <div id="collapseSalles"
                  class="accordion-collapse collapse"
-                 aria-labelledby="headingBL"
+                 aria-labelledby="headingSalles"
                  data-bs-parent="#sidebarAccordion"
-                 th:classappend="${currentUri.contains('/bonlivraison') ? 'show' : ''}">
-
+                 th:classappend="${currentUri.contains('/salle') ? 'show' : ''}">
                 <div class="accordion-body p-0">
                     <ul class="nav flex-column px-3">
+
                         <li>
                             <a class="nav-link text-white sidebar-sub"
-                               th:href="@{/bonlivraison/list}"
-                               th:classappend="${currentUri == '/bonlivraison/list' ? 'active' : ''}">
-                                Liste
+                               th:href="@{/salle/list}"
+                               th:classappend="${currentUri == '/salle/list' ? 'active' : ''}">
+                                <i class="fas fa-list me-2"></i> Liste des salles
                             </a>
                         </li>
 
                         <li>
                             <a class="nav-link text-white sidebar-sub"
-                               th:href="@{/bonlivraison/add}"
-                               th:classappend="${currentUri == '/bonlivraison/add' ? 'active' : ''}">
-                                Ajouter un bon de livraison
+                               sec:authorize="hasRole('ADMIN')"
+                               th:href="@{/salle/add}"
+                               th:classappend="${currentUri == '/salle/add' ? 'active' : ''}">
+                                <i class="fas fa-plus-circle me-2"></i> Ajouter une salle
                             </a>
                         </li>
+
                     </ul>
                 </div>
             </div>
         </div>
 
 
-        <!-- STOCK -->
-        <div class="accordion-item bg-transparent border-0" sec:authorize="hasAnyRole('ADMIN','MOYENS_GENERAUX')">
-            <h2 class="accordion-header">
-                <button class="accordion-button bg-transparent text-start text-white sidebar-button collapsed"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#collapseStock"
-                        aria-expanded="false"
-                        aria-controls="collapseStock"
-                        th:classappend="${currentUri.contains('/stock') or currentUri.contains('/message') ? '' : 'collapsed'}">
-                    <i class="fas fa-warehouse me-3"></i> Stock
-                </button>
-            </h2>
-            <div id="collapseStock"
-                 class="accordion-collapse collapse"
-                 aria-labelledby="headingStock"
-                 data-bs-parent="#sidebarAccordion"
-                 th:classappend="${currentUri.contains('/stock') ? 'show' : ''}">
-                <div class="accordion-body p-0">
-                    <ul class="nav flex-column px-3">
-                        <li>
-                            <a class="nav-link text-white sidebar-sub"
-                               th:href="@{/stock/etat-stock}"
-                               th:classappend="${currentUri == '/stock/etat-stock' ? 'active' : ''}">
-                                État de stock
-                            </a>
-                        </li>
-                        <!--                        <li>-->
-                        <!--                            <a class="nav-link text-white sidebar-sub"-->
-                        <!--                               th:href="@{/admin/message/alertes-stock}"-->
-                        <!--                               th:classappend="${currentUri == '/admin/message/alertes-stock'} ? 'active' : ''">-->
-                        <!--                                Alertes de stock-->
-                        <!--                            </a>-->
-                        <!--                        </li>-->
-                    </ul>
-                </div>
-            </div>
-        </div>
+        <!--&lt;!&ndash;    Demande de Materiel&ndash;&gt;-->
+<!--        <div class="accordion-item bg-transparent border-0">-->
+<!--            <h2 class="accordion-header">-->
+<!--                <button class="accordion-button bg-transparent text-start text-white sidebar-button collapsed"-->
+<!--                        type="button"-->
+<!--                        data-bs-toggle="collapse"-->
+<!--                        data-bs-target="#collapseDemande"-->
+<!--                        aria-expanded="false"-->
+<!--                        aria-controls="collapseDemande"-->
+<!--                        th:classappend="${currentUri.contains('/demande') ? '' : 'collapsed'}">-->
+<!--                    <i class="fas fa-file-alt me-3"></i> Demande de Matériel-->
+<!--                </button>-->
+<!--            </h2>-->
+<!--            <div id="collapseDemande"-->
+<!--                 class="accordion-collapse collapse"-->
+<!--                 aria-labelledby="headingDemande"-->
+<!--                 data-bs-parent="#sidebarAccordion"-->
+<!--                 th:classappend="${currentUri.contains('/demande') ? 'show' : ''}">-->
+<!--                <div class="accordion-body p-0">-->
+<!--                    <ul class="nav flex-column px-3">-->
+<!--                        <li>-->
+<!--                            <a class="nav-link text-white sidebar-sub" sec:authorize="hasAnyRole('ADMIN','MOYENS_GENERAUX')"-->
+<!--                               th:href="@{/demande/list}"-->
+<!--                               th:classappend="${currentUri == '/demande/list' ? 'active' : ''}">-->
+<!--                                Liste-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a class="nav-link text-white sidebar-sub"-->
+<!--                               th:href="@{/demande/add}"-->
+<!--                               th:classappend="${currentUri == '/demande/add' ? 'active' : ''}">-->
+<!--                                Ajout Demande-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Bon de Livraison &ndash;&gt;-->
+<!--        <div class="accordion-item bg-transparent border-0">-->
+<!--            <h2 class="accordion-header">-->
+<!--                <button class="accordion-button bg-transparent text-start text-white sidebar-button collapsed"-->
+<!--                        type="button"-->
+<!--                        data-bs-toggle="collapse"-->
+<!--                        data-bs-target="#collapseBL"-->
+<!--                        aria-expanded="false"-->
+<!--                        aria-controls="collapseBL"-->
+<!--                        sec:authorize="hasAnyRole('ADMIN','MOYENS_GENERAUX')"-->
+<!--                        th:classappend="${currentUri.contains('/bonlivraison') ? '' : 'collapsed'}">-->
+<!--                    <i class="fas fa-clipboard-list me-3"></i> Bon de Livraison-->
+<!--                </button>-->
+<!--            </h2>-->
+
+<!--            <div id="collapseBL"-->
+<!--                 class="accordion-collapse collapse"-->
+<!--                 aria-labelledby="headingBL"-->
+<!--                 data-bs-parent="#sidebarAccordion"-->
+<!--                 th:classappend="${currentUri.contains('/bonlivraison') ? 'show' : ''}">-->
+
+<!--                <div class="accordion-body p-0">-->
+<!--                    <ul class="nav flex-column px-3">-->
+<!--                        <li>-->
+<!--                            <a class="nav-link text-white sidebar-sub"-->
+<!--                               th:href="@{/bonlivraison/list}"-->
+<!--                               th:classappend="${currentUri == '/bonlivraison/list' ? 'active' : ''}">-->
+<!--                                Liste-->
+<!--                            </a>-->
+<!--                        </li>-->
+
+<!--                        <li>-->
+<!--                            <a class="nav-link text-white sidebar-sub"-->
+<!--                               th:href="@{/bonlivraison/add}"-->
+<!--                               th:classappend="${currentUri == '/bonlivraison/add' ? 'active' : ''}">-->
+<!--                                Ajouter un bon de livraison-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+
+<!--        &lt;!&ndash; STOCK &ndash;&gt;-->
+<!--        <div class="accordion-item bg-transparent border-0" sec:authorize="hasAnyRole('ADMIN','MOYENS_GENERAUX')">-->
+<!--            <h2 class="accordion-header">-->
+<!--                <button class="accordion-button bg-transparent text-start text-white sidebar-button collapsed"-->
+<!--                        type="button"-->
+<!--                        data-bs-toggle="collapse"-->
+<!--                        data-bs-target="#collapseStock"-->
+<!--                        aria-expanded="false"-->
+<!--                        aria-controls="collapseStock"-->
+<!--                        th:classappend="${currentUri.contains('/stock') or currentUri.contains('/message') ? '' : 'collapsed'}">-->
+<!--                    <i class="fas fa-warehouse me-3"></i> Stock-->
+<!--                </button>-->
+<!--            </h2>-->
+<!--            <div id="collapseStock"-->
+<!--                 class="accordion-collapse collapse"-->
+<!--                 aria-labelledby="headingStock"-->
+<!--                 data-bs-parent="#sidebarAccordion"-->
+<!--                 th:classappend="${currentUri.contains('/stock') ? 'show' : ''}">-->
+<!--                <div class="accordion-body p-0">-->
+<!--                    <ul class="nav flex-column px-3">-->
+<!--                        <li>-->
+<!--                            <a class="nav-link text-white sidebar-sub"-->
+<!--                               th:href="@{/stock/etat-stock}"-->
+<!--                               th:classappend="${currentUri == '/stock/etat-stock' ? 'active' : ''}">-->
+<!--                                État de stock-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        &lt;!&ndash;                        <li>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                            <a class="nav-link text-white sidebar-sub"&ndash;&gt;-->
+<!--                        &lt;!&ndash;                               th:href="@{/admin/message/alertes-stock}"&ndash;&gt;-->
+<!--                        &lt;!&ndash;                               th:classappend="${currentUri == '/admin/message/alertes-stock'} ? 'active' : ''">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                Alertes de stock&ndash;&gt;-->
+<!--                        &lt;!&ndash;                            </a>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                        </li>&ndash;&gt;-->
+<!--                    </ul>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
 
     </div>
 

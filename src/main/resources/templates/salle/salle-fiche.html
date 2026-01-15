@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title th:text="'Fiche Salle - ' + ${salle.nom}">Fiche Salle</title>
+
+    <th:block th:insert="~{fragment/load_css :: load_css}"></th:block>
+    <th:block th:insert="~{fragment/font :: font}"></th:block>
+    <th:block th:insert="~{fragment/load_script :: load_script}"></th:block>
+
+    <style>
+        .hero {
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(0,16,81,1) 0%, rgba(0,67,156,1) 100%);
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+        .hero:before{
+            content:"";
+            position:absolute;
+            inset:-80px;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.12), transparent 55%),
+            radial-gradient(circle at 80% 70%, rgba(255,255,255,.10), transparent 60%);
+            transform: rotate(8deg);
+        }
+        .hero-content { position: relative; z-index: 1; }
+
+        .badge-soft {
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.22);
+            color: #fff;
+        }
+
+        .card-rounded { border-radius: 18px; }
+        .kpi {
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,.08);
+            color: #001051;
+            min-width: 170px;
+        }
+        .kpi .text-muted { color: #6c757d !important; }
+
+        .pill {
+            border-radius: 999px;
+            padding: .45rem .85rem;
+            background: #f8fafc;
+            border: 1px solid rgba(0,0,0,.06);
+            color: #0f172a;
+        }
+
+        .tag-premium{
+            background: rgba(34,197,94,.14);
+            border: 1px solid rgba(34,197,94,.25);
+            color: #166534;
+            border-radius: 999px;
+            padding: .25rem .65rem;
+            font-weight: 700;
+            font-size: .85rem;
+        }
+        .tag-standard{
+            background: rgba(59,130,246,.14);
+            border: 1px solid rgba(59,130,246,.25);
+            color: #1d4ed8;
+            border-radius: 999px;
+            padding: .25rem .65rem;
+            font-weight: 700;
+            font-size: .85rem;
+        }
+
+        .section-title{
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .muted-label{
+            color: #64748b;
+            font-size: .9rem;
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <section>
+
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold text-gradient-blue">
+                <i class="fas fa-door-open me-3 icon-gradient-blue"></i> Fiche Salle
+            </h1>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <a th:href="@{/salle/list}" class="btn btn-gradient-blue">
+                    <i class="fas fa-list me-1"></i>Liste des salles
+                </a>
+
+                <a th:href="@{/salle/add}" sec:authorize="hasRole('ADMIN')" class="btn btn-gradient-green">
+                    <i class="fas fa-plus-circle me-1"></i>Nouvelle salle
+                </a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragment/load_pop_up :: pop_up}"></div>
+
+        <!-- HERO -->
+        <div class="hero shadow-lg mb-4">
+            <div class="p-4 p-md-5 hero-content">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+
+                    <div>
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <span class="badge badge-soft px-3 py-2">
+                                <i class="fas fa-hashtag me-2"></i>
+                                <span th:text="${salle.id}">SAL001</span>
+                            </span>
+
+                            <span class="badge badge-soft px-3 py-2">
+                                <i class="fas fa-door-open me-2"></i>
+                                <span th:text="${salle.nom}">Salle A</span>
+                            </span>
+
+                            <span class="badge badge-soft px-3 py-2">
+                                <i class="fas fa-layer-group me-2"></i>
+                                <span th:text="${salle.typeSalle.libelle}">Salle Standard</span>
+                            </span>
+                        </div>
+
+                        <h2 class="fw-bold mb-1" th:text="${salle.nom}">Salle A</h2>
+                        <div class="label-muted" style="opacity:.88;">
+                            <i class="fas fa-users me-2"></i>
+                            Capacité max :
+                            <span class="fw-semibold" th:text="${salle.capaciteMax}">120</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI -->
+                    <div class="d-flex gap-3 flex-wrap justify-content-end">
+                        <div class="p-3 kpi text-center">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-crown me-1"></i>Premium
+                            </div>
+                            <div class="fw-bold fs-4" th:text="${totalPremium}">10</div>
+                            <div class="text-muted small">siège(s)</div>
+                        </div>
+
+                        <div class="p-3 kpi text-center">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-chair me-1"></i>Standard
+                            </div>
+                            <div class="fw-bold fs-4" th:text="${totalStandard}">15</div>
+                            <div class="text-muted small">siège(s)</div>
+                        </div>
+
+                        <div class="p-3 kpi text-center">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-chair me-1"></i>vip
+                            </div>
+                            <div class="fw-bold fs-4" th:text="${totalVip}">15</div>
+                            <div class="text-muted small">siège(s)</div>
+                        </div>
+
+                        <div class="p-3 kpi text-center">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-money-bill-wave me-1"></i>Valeur max
+                            </div>
+                            <div class="fw-bold fs-5">
+                                <span th:text="${#numbers.formatDecimal(valeurMax, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                <span class="text-muted fs-6">Ar</span>
+                            </div>
+                            <div class="text-muted small">si tous les sièges vendus</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu -->
+        <div class="row g-4">
+
+            <!-- Infos -->
+            <div class="col-12 col-lg-5">
+                <div class="card card-rounded shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h5 class="section-title mb-3">
+                            <i class="fas fa-info-circle me-2 icon-gradient-blue"></i> Informations
+                        </h5>
+
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="pill"><strong>Code :</strong> <span th:text="${salle.id}">SAL001</span></span>
+                            <span class="pill"><strong>Type :</strong> <span th:text="${salle.typeSalle.code}">STD</span></span>
+                            <span class="pill"><strong>Capacité :</strong> <span th:text="${salle.capaciteMax}">120</span></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="muted-label mb-1"><i class="fas fa-layer-group me-2"></i>Type de salle</div>
+                            <div class="fw-semibold" th:text="${salle.typeSalle.libelle}">Salle Standard</div>
+                        </div>
+
+                        <div class="mb-0">
+                            <div class="muted-label mb-1"><i class="fas fa-ticket-alt me-2"></i>Résumé</div>
+                            <div class="text-muted">
+                                Cette salle contient
+                                <span class="fw-semibold" th:text="${totalPremium}">0</span> sièges Premium et
+                                <span class="fw-semibold" th:text="${totalStandard}">0</span> sièges Standard.
+                                <span class="fw-semibold" th:text="${totalVip}">0</span> sièges Vip.
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Répartition -->
+            <div class="col-12 col-lg-7">
+                <div class="card card-rounded shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h5 class="section-title mb-3">
+                            <i class="fas fa-chart-pie me-2 icon-gradient-blue"></i> Répartition des sièges
+                        </h5>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 border rounded-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-bold">
+                                            <span class="tag-premium"><i class="fas fa-crown me-1"></i>Premium</span>
+                                        </div>
+                                        <div class="fw-bold fs-4" th:text="${totalPremium}">0</div>
+
+                                    </div>
+                                    <div class="text-muted small">
+                                        Prix par siège :
+                                        <span class="fw-bold"
+                                              th:text="${#numbers.formatDecimal(50000, 0, 'COMMA', 0, 'POINT')} + ' Ar'">50 000 Ar</span>
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Prix total :
+                                        <span class="fw-bold"
+                                              th:text="${#numbers.formatDecimal(valeurPremium, 0, 'COMMA', 0, 'POINT')} + ' Ar'">0 Ar</span>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 border rounded-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-bold">
+                                            <span class="tag-premium"><i class="fas fa-crown me-1"></i>Vip</span>
+                                        </div>
+                                        <div class="fw-bold fs-4" th:text="${totalVip}">0</div>
+
+                                    </div>
+                                    <div class="text-muted small">
+                                        Prix par siège :
+                                        <span class="fw-bold"
+                                              th:text="${#numbers.formatDecimal(90000, 0, 'COMMA', 0, 'POINT')} + ' Ar'">90 000 Ar</span>
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Prix total :
+                                        <span class="fw-bold"
+                                              th:text="${#numbers.formatDecimal(valeurVip, 0, 'COMMA', 0, 'POINT')} + ' Ar'">0 Ar</span>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 border rounded-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-bold">
+                                            <span class="tag-standard"><i class="fas fa-chair me-1"></i>Standard</span>
+                                        </div>
+                                        <div class="fw-bold fs-4" th:text="${totalStandard}">0</div>
+
+                                    </div>
+                                    <div class="text-muted small">
+                                        Prix par siège :
+                                        <span class="fw-bold"
+                                              th:text="${#numbers.formatDecimal(20000, 0, 'COMMA', 0, 'POINT')} + ' Ar'">20 000 Ar</span>
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Prix total :
+                                        <span class="fw-bold"
+                                              th:text="${#numbers.formatDecimal(valeurStandard, 0, 'COMMA', 0, 'POINT')} + ' Ar'">0 Ar</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-3 mb-0" role="alert">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            La <strong>valeur max</strong> correspond à la somme des prix de tous les sièges (selon leur type).
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Détail sièges (optionnel) -->
+            <div class="col-12">
+                <div class="card card-rounded shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h5 class="section-title mb-3">
+                            <i class="fas fa-chair me-2 icon-gradient-blue"></i> Détail des sièges
+                        </h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag me-2 icon-gradient-light-blue"></i>ID</th>
+                                    <th><i class="fas fa-th-large me-2 icon-gradient-light-blue"></i>Rangée</th>
+                                    <th><i class="fas fa-sort-numeric-up me-2 icon-gradient-light-blue"></i>Numéro</th>
+                                    <th><i class="fas fa-tag me-2 icon-gradient-light-blue"></i>Type</th>
+<!--                                    <th class="text-end"><i class="fas fa-money-bill-wave me-2 icon-gradient-light-blue"></i>Prix</th>-->
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="s : ${sieges}">
+                                    <td th:text="${s.id}">SIG001</td>
+                                    <td th:text="${s.rangee}">A</td>
+                                    <td th:text="${s.numero}">1</td>
+                                    <td>
+                                        <span th:if="${s.typeSiege != null and s.typeSiege.libelle == 'Premium'}" class="tag-premium">
+                                            <i class="fas fa-crown me-1"></i>Premium
+                                        </span>
+                                        <span th:if="${s.typeSiege != null and s.typeSiege.libelle != 'Premium'}" class="tag-standard">
+                                            <i class="fas fa-chair me-1"></i>Standard
+                                        </span>
+                                        <span th:if="${s.typeSiege == null}" class="text-muted">-</span>
+                                    </td>
+<!--                                    <td class="text-end">-->
+<!--                                        <span th:if="${s.typeSiege != null}"-->
+<!--                                              th:text="${#numbers.formatDecimal(s.typeSiege.prix, 0, 'COMMA', 0, 'POINT')}">0</span>-->
+<!--                                        <span th:if="${s.typeSiege != null}" class="text-muted"> Ar</span>-->
+<!--                                        <span th:if="${s.typeSiege == null}" class="text-muted">-</span>-->
+<!--                                    </td>-->
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Si tu veux, on peut ajouter des filtres (DataTables) ou regrouper par rangée.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+</div>
+
+</body>
+</html>
