@@ -56,54 +56,34 @@ public class SalleController {
 
         List<Siege> sieges = siegeService.getSiegesBySalle(idSalle);
 
-        int totalPremium = 0;
-        int totalStandard = 0;
-        int totalVip = 0;
-
-        double valeurPremium = 0.0;
-        double valeurStandard = 0.0;
-        double valeurVip = 0.0;
+        // key = libelle du type (Premium/Vip/Standard/...)
+        Map<String, mg.working.cinema.dto.TypeSiegeStats> statsMap = new HashMap<>();
 
         for (Siege s : sieges) {
-            if (s.getTypeSiege() == null) continue;
-            if (s.getTypeSiege().getLibelle() == null) continue;
+            if (s.getTypeSiege() == null || s.getTypeSiege().getLibelle() == null) continue;
 
             String libelle = s.getTypeSiege().getLibelle();
             double prix = s.getTypeSiege().getPrix();
 
-            if (libelle.equalsIgnoreCase("Premium")) {
-                totalPremium++;
-                valeurPremium += prix;
-            }
-            else if (libelle.equalsIgnoreCase("Standard")) {
-                totalStandard++;
-                valeurStandard += prix;
-            } else if (libelle.equalsIgnoreCase("Vip")) {
-                totalVip++;
-                valeurVip += prix;
-            }
+            statsMap.putIfAbsent(libelle, new mg.working.cinema.dto.TypeSiegeStats(libelle, prix));
+            statsMap.get(libelle).increment();
         }
 
-        double valeurMax = valeurPremium + valeurStandard + valeurVip;
+        // Valeur max = somme des valeursTotales
+        double valeurMax = statsMap.values().stream()
+                .mapToDouble(mg.working.cinema.dto.TypeSiegeStats::getValeurTotale)
+                .sum();
 
         model.addAttribute("currentUri", request.getRequestURI());
         model.addAttribute("salle", salle);
         model.addAttribute("sieges", sieges);
 
-        // Totaux sièges
-        model.addAttribute("totalPremium", totalPremium);
-        model.addAttribute("totalStandard", totalStandard);
-        model.addAttribute("totalVip", totalVip);
-
-
-        // Totaux financiers
-        model.addAttribute("valeurPremium", valeurPremium);
-        model.addAttribute("valeurStandard", valeurStandard);
+        // ✅ liste dynamique pour Thymeleaf
+        model.addAttribute("statsTypes", statsMap.values());
         model.addAttribute("valeurMax", valeurMax);
-        model.addAttribute("valeurVip", valeurVip);
-
 
         return "salle/salle-fiche";
     }
+
 
 }

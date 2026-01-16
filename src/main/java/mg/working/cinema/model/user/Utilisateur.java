@@ -22,7 +22,7 @@ import java.util.Set;
         sequenceName = "s_utilisateur",
         allocationSize = 1)
 public class Utilisateur {
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "s_utilisateur") @Column(name = "id_utilisateur")
+    @Id @Column(name = "id_utilisateur")
     String id;
     String nom;
     String prenom;

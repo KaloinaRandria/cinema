@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
         sequenceName = "s_reservation_mere",
         allocationSize = 1)
 public class ReservationMere {
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "s_reservation_mere") @Column(name = "id_reservation_mere")
+    @Id @Column(name = "id_reservation_mere")
     String id;
     String reference;
     @Column(name = "date_reservation")

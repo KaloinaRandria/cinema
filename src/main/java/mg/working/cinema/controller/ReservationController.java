@@ -1,15 +1,14 @@
 package mg.working.cinema.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import mg.working.cinema.model.Siege;
 import mg.working.cinema.model.film.Seance;
 import mg.working.cinema.model.user.Utilisateur;
-import mg.working.cinema.service.SiegeService;
 import mg.working.cinema.service.film.SeanceService;
-import mg.working.cinema.service.reservation.ReservationServiceImpl;
-import mg.working.cinema.service.user.UtilisateurService;
+import mg.working.cinema.service.reservation.ReservationAvailabilityService;
+import mg.working.cinema.service.reservation.ReservationService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,84 +16,60 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+
+
 @Controller
 @RequestMapping("/reservation")
 public class ReservationController {
 
     private final SeanceService seanceService;
-    private final SiegeService siegeService;
-    private final ReservationServiceImpl reservationService;
-    private final UtilisateurService utilisateurService;
-    private final ObjectMapper objectMapper;
+    private final ReservationAvailabilityService availabilityService;
+    private final ReservationService reservationService;
 
     public ReservationController(SeanceService seanceService,
-                                 SiegeService siegeService,
-                                 ReservationServiceImpl reservationService,
-                                 UtilisateurService utilisateurService,
-                                 ObjectMapper objectMapper) {
+                                 ReservationAvailabilityService availabilityService,
+                                 ReservationService reservationService) {
         this.seanceService = seanceService;
-        this.siegeService = siegeService;
+        this.availabilityService = availabilityService;
         this.reservationService = reservationService;
-        this.utilisateurService = utilisateurService;
-        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/new/{idSeance}")
-    public String newReservation(@PathVariable String idSeance, Model model, HttpServletRequest request)
-            throws JsonProcessingException {
-
+    public String form(@PathVariable String idSeance, Model model, HttpServletRequest request) {
         Seance seance = seanceService.getById(idSeance)
                 .orElseThrow(() -> new IllegalArgumentException("Séance introuvable : " + idSeance));
-
-        var salle = seance.getSalle();
-
-        // Tous les sièges de la salle (plan)
-        var sieges = siegeService.getSiegesBySalle(salle.getId());
-
-        // Sièges déjà occupés pour CETTE séance
-        List<String> occupiedSeatIds = reservationService.getOccupiedSeatIds(idSeance);
-
-        // JSON pour le front (évite #objects.toJson)
-        String siegesJson = objectMapper.writeValueAsString(sieges);
-        String occupiedJson = objectMapper.writeValueAsString(occupiedSeatIds);
-
+        List<Siege> availableSeats = availabilityService.getAvailableSeats(idSeance);
         model.addAttribute("currentUri", request.getRequestURI());
         model.addAttribute("seance", seance);
-        model.addAttribute("salle", salle);
-        model.addAttribute("sieges", sieges);
+        model.addAttribute("salle", seance.getSalle());
+        model.addAttribute("availableSeats", availableSeats);
 
-        model.addAttribute("siegesJson", siegesJson);
-        model.addAttribute("occupiedJson", occupiedJson);
-
-        return "reservation/reservation-saisie"; // templates/reservation/reservation-saisie.html
+        return "reservation/reservation-saisie";
     }
 
     @PostMapping("/create")
-    public String createReservation(@RequestParam("idSeance") String idSeance,
-                                    @RequestParam(value = "seatIds[]", required = false) List<String> seatIds,
-                                    Authentication authentication,
-                                    RedirectAttributes redirectAttributes) {
-        try {
-            if (seatIds == null || seatIds.isEmpty()) {
-                redirectAttributes.addFlashAttribute("ko", "Veuillez sélectionner au moins un siège.");
-                return "redirect:/reservation/new/" + idSeance;
-            }
+    public String create(@RequestParam("idSeance") String idSeance,
+                         @RequestParam(name = "seatIds[]", required = false) List<String> seatIds,
+                         RedirectAttributes ra) {
 
-            String email = authentication.getName();
-            Utilisateur utilisateur = utilisateurService.getUtilisateurByMail(email);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = auth.getPrincipal();
 
-            reservationService.createReservation(idSeance, utilisateur, seatIds);
-
-            redirectAttributes.addFlashAttribute("ok", "Réservation confirmée avec succès !");
-            return "redirect:/seance/" + idSeance;
-
-        } catch (IllegalStateException ex) {
-            redirectAttributes.addFlashAttribute("ko", ex.getMessage());
+        if (!(principal instanceof Utilisateur user)) {
+            ra.addFlashAttribute("ko", "Utilisateur non authentifié.");
             return "redirect:/reservation/new/" + idSeance;
+        }
 
-        } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("ko", "Erreur lors de la réservation : " + ex.getMessage());
+        try {
+            String reservationId = reservationService.createReservation(idSeance, user, seatIds);
+            ra.addFlashAttribute("ok", "Réservation créée : " + reservationId);
+            return "redirect:/seance/" + idSeance;
+        } catch (Exception e) {
+            ra.addFlashAttribute("ko", e.getMessage());
             return "redirect:/reservation/new/" + idSeance;
         }
     }
+
+
 }
+

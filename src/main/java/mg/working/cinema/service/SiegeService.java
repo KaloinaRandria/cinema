@@ -24,7 +24,7 @@ public class SiegeService {
             throw new IllegalArgumentException("L'identifiant de la salle est obligatoire");
         }
 
-        return siegeRepository.findSiegeBySalle(idSalle);
+        return siegeRepository.findBySalleOrdered(idSalle);
     }
 
     /**

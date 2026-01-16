@@ -51,25 +51,6 @@
             color: #0f172a;
         }
 
-        .tag-premium{
-            background: rgba(34,197,94,.14);
-            border: 1px solid rgba(34,197,94,.25);
-            color: #166534;
-            border-radius: 999px;
-            padding: .25rem .65rem;
-            font-weight: 700;
-            font-size: .85rem;
-        }
-        .tag-standard{
-            background: rgba(59,130,246,.14);
-            border: 1px solid rgba(59,130,246,.25);
-            color: #1d4ed8;
-            border-radius: 999px;
-            padding: .25rem .65rem;
-            font-weight: 700;
-            font-size: .85rem;
-        }
-
         .section-title{
             font-weight: 800;
             color: #0f172a;
@@ -138,29 +119,14 @@
                         </div>
                     </div>
 
-                    <!-- KPI -->
+                    <!-- KPI (dynamique : un KPI par type) -->
                     <div class="d-flex gap-3 flex-wrap justify-content-end">
-                        <div class="p-3 kpi text-center">
+                        <div class="p-3 kpi text-center" th:each="t : ${statsTypes}">
                             <div class="text-muted small mb-1">
-                                <i class="fas fa-crown me-1"></i>Premium
+                                <i class="fas fa-chair me-1"></i>
+                                <span th:text="${t.libelle}">Type</span>
                             </div>
-                            <div class="fw-bold fs-4" th:text="${totalPremium}">10</div>
-                            <div class="text-muted small">siège(s)</div>
-                        </div>
-
-                        <div class="p-3 kpi text-center">
-                            <div class="text-muted small mb-1">
-                                <i class="fas fa-chair me-1"></i>Standard
-                            </div>
-                            <div class="fw-bold fs-4" th:text="${totalStandard}">15</div>
-                            <div class="text-muted small">siège(s)</div>
-                        </div>
-
-                        <div class="p-3 kpi text-center">
-                            <div class="text-muted small mb-1">
-                                <i class="fas fa-chair me-1"></i>vip
-                            </div>
-                            <div class="fw-bold fs-4" th:text="${totalVip}">15</div>
+                            <div class="fw-bold fs-4" th:text="${t.total}">0</div>
                             <div class="text-muted small">siège(s)</div>
                         </div>
 
@@ -205,18 +171,19 @@
                         <div class="mb-0">
                             <div class="muted-label mb-1"><i class="fas fa-ticket-alt me-2"></i>Résumé</div>
                             <div class="text-muted">
-                                Cette salle contient
-                                <span class="fw-semibold" th:text="${totalPremium}">0</span> sièges Premium et
-                                <span class="fw-semibold" th:text="${totalStandard}">0</span> sièges Standard.
-                                <span class="fw-semibold" th:text="${totalVip}">0</span> sièges Vip.
-
+                                Cette salle contient :
+                                <span th:each="t, iter : ${statsTypes}">
+                                    <span class="fw-semibold" th:text="${t.total}">0</span>
+                                    <span th:text="${t.libelle}">Type</span>
+                                    <span th:if="${!iter.last}">, </span>
+                                </span>.
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Répartition -->
+            <!-- Répartition (dynamique) -->
             <div class="col-12 col-lg-7">
                 <div class="card card-rounded shadow-sm border-0">
                     <div class="card-body p-4">
@@ -225,77 +192,29 @@
                         </h5>
 
                         <div class="row g-3">
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-6" th:each="t : ${statsTypes}">
                                 <div class="p-3 border rounded-4">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div class="fw-bold">
-                                            <span class="tag-premium"><i class="fas fa-crown me-1"></i>Premium</span>
+                                            <span class="pill">
+                                                <i class="fas fa-chair me-1"></i>
+                                                <span th:text="${t.libelle}">Type</span>
+                                            </span>
                                         </div>
-                                        <div class="fw-bold fs-4" th:text="${totalPremium}">0</div>
-
+                                        <div class="fw-bold fs-4" th:text="${t.total}">0</div>
                                     </div>
+
                                     <div class="text-muted small">
                                         Prix par siège :
                                         <span class="fw-bold"
-                                              th:text="${#numbers.formatDecimal(50000, 0, 'COMMA', 0, 'POINT')} + ' Ar'">50 000 Ar</span>
+                                              th:text="${#numbers.formatDecimal(t.prixUnitaire, 0, 'COMMA', 0, 'POINT')} + ' Ar'">0 Ar</span>
                                     </div>
 
                                     <div class="text-muted small">
                                         Prix total :
                                         <span class="fw-bold"
-                                              th:text="${#numbers.formatDecimal(valeurPremium, 0, 'COMMA', 0, 'POINT')} + ' Ar'">0 Ar</span>
+                                              th:text="${#numbers.formatDecimal(t.valeurTotale, 0, 'COMMA', 0, 'POINT')} + ' Ar'">0 Ar</span>
                                     </div>
-
-
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <div class="p-3 border rounded-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div class="fw-bold">
-                                            <span class="tag-premium"><i class="fas fa-crown me-1"></i>Vip</span>
-                                        </div>
-                                        <div class="fw-bold fs-4" th:text="${totalVip}">0</div>
-
-                                    </div>
-                                    <div class="text-muted small">
-                                        Prix par siège :
-                                        <span class="fw-bold"
-                                              th:text="${#numbers.formatDecimal(90000, 0, 'COMMA', 0, 'POINT')} + ' Ar'">90 000 Ar</span>
-                                    </div>
-
-                                    <div class="text-muted small">
-                                        Prix total :
-                                        <span class="fw-bold"
-                                              th:text="${#numbers.formatDecimal(valeurVip, 0, 'COMMA', 0, 'POINT')} + ' Ar'">0 Ar</span>
-                                    </div>
-
-
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <div class="p-3 border rounded-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div class="fw-bold">
-                                            <span class="tag-standard"><i class="fas fa-chair me-1"></i>Standard</span>
-                                        </div>
-                                        <div class="fw-bold fs-4" th:text="${totalStandard}">0</div>
-
-                                    </div>
-                                    <div class="text-muted small">
-                                        Prix par siège :
-                                        <span class="fw-bold"
-                                              th:text="${#numbers.formatDecimal(20000, 0, 'COMMA', 0, 'POINT')} + ' Ar'">20 000 Ar</span>
-                                    </div>
-
-                                    <div class="text-muted small">
-                                        Prix total :
-                                        <span class="fw-bold"
-                                              th:text="${#numbers.formatDecimal(valeurStandard, 0, 'COMMA', 0, 'POINT')} + ' Ar'">0 Ar</span>
-                                    </div>
-
                                 </div>
                             </div>
                         </div>
@@ -308,7 +227,7 @@
                 </div>
             </div>
 
-            <!-- Détail sièges (optionnel) -->
+            <!-- Détail sièges -->
             <div class="col-12">
                 <div class="card card-rounded shadow-sm border-0">
                     <div class="card-body p-4">
@@ -324,7 +243,7 @@
                                     <th><i class="fas fa-th-large me-2 icon-gradient-light-blue"></i>Rangée</th>
                                     <th><i class="fas fa-sort-numeric-up me-2 icon-gradient-light-blue"></i>Numéro</th>
                                     <th><i class="fas fa-tag me-2 icon-gradient-light-blue"></i>Type</th>
-<!--                                    <th class="text-end"><i class="fas fa-money-bill-wave me-2 icon-gradient-light-blue"></i>Prix</th>-->
+                                    <th class="text-end"><i class="fas fa-money-bill-wave me-2 icon-gradient-light-blue"></i>Prix</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -333,20 +252,15 @@
                                     <td th:text="${s.rangee}">A</td>
                                     <td th:text="${s.numero}">1</td>
                                     <td>
-                                        <span th:if="${s.typeSiege != null and s.typeSiege.libelle == 'Premium'}" class="tag-premium">
-                                            <i class="fas fa-crown me-1"></i>Premium
-                                        </span>
-                                        <span th:if="${s.typeSiege != null and s.typeSiege.libelle != 'Premium'}" class="tag-standard">
-                                            <i class="fas fa-chair me-1"></i>Standard
-                                        </span>
+                                        <span th:if="${s.typeSiege != null}" class="pill" th:text="${s.typeSiege.libelle}">Standard</span>
                                         <span th:if="${s.typeSiege == null}" class="text-muted">-</span>
                                     </td>
-<!--                                    <td class="text-end">-->
-<!--                                        <span th:if="${s.typeSiege != null}"-->
-<!--                                              th:text="${#numbers.formatDecimal(s.typeSiege.prix, 0, 'COMMA', 0, 'POINT')}">0</span>-->
-<!--                                        <span th:if="${s.typeSiege != null}" class="text-muted"> Ar</span>-->
-<!--                                        <span th:if="${s.typeSiege == null}" class="text-muted">-</span>-->
-<!--                                    </td>-->
+                                    <td class="text-end">
+                                        <span th:if="${s.typeSiege != null}"
+                                              th:text="${#numbers.formatDecimal(s.typeSiege.prix, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                        <span th:if="${s.typeSiege != null}" class="text-muted"> Ar</span>
+                                        <span th:if="${s.typeSiege == null}" class="text-muted">-</span>
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
