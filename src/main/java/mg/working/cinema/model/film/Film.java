@@ -21,7 +21,7 @@ import java.time.LocalDate;
         sequenceName = "s_film",
         allocationSize = 1)
 public class Film {
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "s_film") @Column(name = "id_film")
+    @Id @Column(name = "id_film")
     String id;
     String titre;
     String description;

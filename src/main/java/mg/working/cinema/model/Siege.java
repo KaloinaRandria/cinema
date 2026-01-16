@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mg.working.cinema.model.util.TypeSiege;
 import mg.working.cinema.service.util.IdGenerator;
 
 @Getter
@@ -25,8 +26,14 @@ public class Siege {
     int numero;
     @ManyToOne @JoinColumn(name = "id_salle", referencedColumnName = "id_salle", nullable = false)
     Salle salle;
+    @ManyToOne @JoinColumn(name = "id_type_siege",referencedColumnName = "id_type_siege")
+    TypeSiege typeSiege;
 
     public void setId(IdGenerator idGenerator) {
         this.id = idGenerator.generateId("SIG", "s_siege");
+    }
+
+    public Siege(String id) {
+        this.id = id;
     }
 }

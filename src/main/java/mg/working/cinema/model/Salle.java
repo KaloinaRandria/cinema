@@ -26,7 +26,6 @@ public class Salle {
     int capaciteMax;
     @ManyToOne @JoinColumn(name = "id_type_salle", referencedColumnName = "id_type_salle", nullable = false)
     TypeSalle typeSalle;
-
     public void setId(IdGenerator idGenerator) {
         this.id = idGenerator.generateId("SAL", "s_salle");
     }

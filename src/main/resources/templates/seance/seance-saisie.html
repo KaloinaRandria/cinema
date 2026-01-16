@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Nouvelle Séance</title>
+    <th:block th:insert="~{fragment/load_css :: load_css}"></th:block>
+    <th:block th:insert="~{fragment/font :: font}"></th:block>
+    <th:block th:insert="~{fragment/load_script :: load_script}"></th:block>
+
+    <style>
+        .hero {
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(0,16,81,1) 0%, rgba(0,67,156,1) 100%);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero:before{
+            content:"";
+            position:absolute;
+            inset:-80px;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.12), transparent 55%),
+            radial-gradient(circle at 80% 70%, rgba(255,255,255,.10), transparent 60%);
+            transform: rotate(8deg);
+        }
+        .hero-content{ position: relative; z-index: 1; }
+
+        .card-rounded { border-radius: 18px; }
+        .label-muted { color: rgba(255,255,255,.85); }
+
+        .form-hint { font-size: .85rem; color: #6c757d; }
+        .pill {
+            border-radius: 999px;
+            padding: .35rem .75rem;
+            background: #f8fafc;
+            border: 1px solid rgba(0,0,0,.06);
+            color: #0f172a;
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <section>
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold text-gradient-blue">
+                <i class="fas fa-plus-circle me-3 icon-gradient-blue"></i> Nouvelle Séance
+            </h1>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <a th:href="@{/seance/list}" class="btn btn-gradient-blue">
+                    <i class="fas fa-list me-1"></i> Liste des Séances
+                </a>
+                <a th:href="@{/seance/add}" class="btn btn-gradient-green">
+                    <i class="fas fa-calendar-plus me-1"></i> Ajouter
+                </a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragment/load_pop_up :: pop_up}"></div>
+
+        <!-- Hero -->
+        <div class="hero shadow-lg mb-4">
+            <div class="p-4 p-md-4 hero-content">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                    <div>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <span class="badge" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);">
+                                <i class="fas fa-calendar-alt me-2"></i>Création d'une séance
+                            </span>
+                            <span class="badge" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);">
+                                <i class="fas fa-ticket-alt me-2"></i>Prix par siège
+                            </span>
+                        </div>
+
+                        <div class="label-muted">
+                            Renseigne le film, la salle, les dates/horaires et le prix. Le système vérifiera les règles métier.
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 align-items-end flex-wrap">
+                        <span class="pill"><i class="fas fa-info-circle me-2"></i>Fin &gt; Début</span>
+                        <span class="pill"><i class="fas fa-ban me-2"></i>Conflit salle interdit</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="row g-4">
+            <div class="col-12 col-lg-8">
+                <div class="card card-rounded shadow-sm border-0">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-edit me-2 icon-gradient-blue"></i> Informations Séance
+                        </h5>
+                        <small class="text-muted">Tous les champs marqués * sont obligatoires.</small>
+                    </div>
+
+                    <div class="card-body p-4">
+
+                        <form th:action="@{/seance/save}" method="post" id="seanceForm">
+
+                            <!-- Film -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-film me-2"></i>Film <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="idFilm" required>
+                                    <option value="" selected disabled>-- Choisir un film --</option>
+                                    <option th:each="f : ${films}"
+                                            th:value="${f.id}"
+                                            th:text="${f.titre}">
+                                        Film
+                                    </option>
+                                </select>
+                                <div class="form-hint">Le film projeté pendant cette séance.</div>
+                            </div>
+
+                            <!-- Salle -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-door-open me-2"></i>Salle <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="idSalle" required>
+                                    <option value="" selected disabled>-- Choisir une salle --</option>
+                                    <option th:each="s : ${salles}"
+                                            th:value="${s.id}"
+                                            th:text="${s.nom + ' (' + s.typeSalle.libelle + ', ' + s.capaciteMax + ' places)'}">
+                                        Salle
+                                    </option>
+                                </select>
+                                <div class="form-hint">La salle doit être libre sur ce créneau.</div>
+                            </div>
+
+                            <div class="row g-3">
+                                <!-- Début -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="far fa-clock me-2"></i>Début <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local"
+                                           class="form-control"
+                                           name="debut"
+                                           required>
+                                    <div class="form-hint">Date + heure de début.</div>
+                                </div>
+
+                                <!-- Fin -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="far fa-clock me-2"></i>Fin <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local"
+                                           class="form-control"
+                                           name="fin"
+                                           required>
+                                    <div class="form-hint">La fin doit être après le début.</div>
+                                </div>
+                            </div>
+
+                            <!-- Prix -->
+                            <div class="mt-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Prix (Ar) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       step="0.01"
+                                       min="0"
+                                       class="form-control"
+                                       name="prix"
+                                       placeholder="Ex: 12000"
+                                       required>
+                                <div class="form-hint">Prix par siège pour cette séance.</div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-gradient-green">
+                                    <i class="fas fa-check-circle me-1"></i> Enregistrer
+                                </button>
+
+                                <a th:href="@{/seance/list}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i> Annuler
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side help -->
+            <div class="col-12 col-lg-4">
+                <div class="card card-rounded shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-shield-alt me-2 icon-gradient-blue"></i> Règles métier (rappel)
+                        </h6>
+                        <ul class="text-muted mb-0">
+                            <li>La date de fin doit être strictement après la date de début.</li>
+                            <li>Le prix doit être ≥ 0.</li>
+                            <li>La salle ne doit pas être déjà utilisée sur le même créneau.</li>
+                            <li>Le film et la salle sont obligatoires.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+</body>
+</html>
