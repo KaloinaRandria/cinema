@@ -133,11 +133,14 @@ public class ReservationService {
         double ca = calculerCA(lignes);
 
         // Optionnel : stocker ca dans ReservationMere si tu ajoutes un champ total
-        // mere.setTotal(ca);
-        // mereRepo.save(mere);
+         mere.setMontantTotal(ca);
+         mereRepo.save(mere);
 
         return mere.getId();
     }
 
+    public double getMontantTotalReservation(Seance seance) {
+       return this.mereRepo.findMontantTotalBySeance(seance);
+    }
 
 }

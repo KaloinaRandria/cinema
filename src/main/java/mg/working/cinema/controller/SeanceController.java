@@ -7,6 +7,7 @@ import mg.working.cinema.model.film.Seance;
 import mg.working.cinema.service.SalleService;
 import mg.working.cinema.service.film.FilmService;
 import mg.working.cinema.service.film.SeanceService;
+import mg.working.cinema.service.reservation.ReservationService;
 import mg.working.cinema.service.util.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -28,6 +29,8 @@ public class SeanceController {
     SalleService salleService;
     @Autowired
     IdGenerator idGenerator;
+    @Autowired
+    ReservationService reservationService;
 
 
     @GetMapping("/list")
@@ -43,6 +46,7 @@ public class SeanceController {
                 .orElseThrow(() -> new IllegalArgumentException("Séance non trouvée avec l'id : " + id));
         model.addAttribute("currentUri", request.getRequestURI());
         model.addAttribute("seance", seance );
+        model.addAttribute("ca" , reservationService.getMontantTotalReservation(seance));
         return "seance/seance-fiche";
     }
 
