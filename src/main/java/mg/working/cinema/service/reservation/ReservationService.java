@@ -41,8 +41,30 @@ public class ReservationService {
         this.idGenerator = idGenerator;
     }
 
+    public double calculerPrix(Siege siege, boolean enfant) {
+        if (siege == null) {
+            throw new IllegalArgumentException("Siège invalide.");
+        }
+        if (siege.getTypeSiege() == null) {
+            throw new IllegalStateException("Type de siège non défini pour le siège : " + siege.getId());
+        }
+
+        double prixBase = siege.getTypeSiege().getPrix();
+
+        // Enfant = -50% sur tous les types
+        return enfant ? (prixBase * 0.5) : prixBase;
+    }
+
+    private double calculerCA(List<ReservationFille> lignes) {
+        double ca = 0.0;
+        for (ReservationFille fille : lignes) {
+            ca += fille.getPrix();
+        }
+        return ca;
+    }
+
     @Transactional
-    public String createReservation(String seanceId, Utilisateur user, List<String> seatIds) {
+    public String createReservation(String seanceId, Utilisateur user, List<String> seatIds, boolean enfant) {
 
         if (user == null || user.getId() == null) {
             throw new IllegalStateException("Utilisateur invalide.");
@@ -59,6 +81,7 @@ public class ReservationService {
             throw new IllegalArgumentException("Veuillez sélectionner au moins un siège.");
         }
 
+        // Vérifier sièges déjà pris
         for (String seatId : clean) {
             if (filleRepo.existsBySeanceAndSiege(seanceId, seatId)) {
                 throw new IllegalStateException("Un des sièges sélectionnés est déjà réservé. Veuillez recommencer.");
@@ -68,29 +91,44 @@ public class ReservationService {
         Seance seance = seanceService.getById(seanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Séance introuvable : " + seanceId));
 
+        // Création de la mère
         ReservationMere mere = new ReservationMere();
         mere.setId(idGenerator);
         mere.setReference("RES-" + mere.getId());
         mere.setDateReservation(LocalDateTime.now());
-        mere.setUtilisateur(user);   // ✅ plus jamais null
+        mere.setUtilisateur(user);
         mere.setSeance(seance);
         mereRepo.save(mere);
 
-        double prix = seance.getPrix();
+        // Création des lignes
+        List<ReservationFille> lignes = new ArrayList<>();
 
         for (String seatId : clean) {
             Siege siege = siegeRepo.findById(seatId)
                     .orElseThrow(() -> new IllegalArgumentException("Siège introuvable : " + seatId));
 
+            double prix = calculerPrix(siege, enfant);
+
             ReservationFille rf = new ReservationFille();
             rf.setId(idGenerator);
-            rf.setPrix(prix);
             rf.setReservationMere(mere);
             rf.setSiege(siege);
-            filleRepo.save(rf);
+            rf.setPrix(prix);
+
+            lignes.add(rf);
         }
+
+        filleRepo.saveAll(lignes);
+
+        // CA (total)
+        double ca = calculerCA(lignes);
+
+        // Optionnel : stocker ca dans ReservationMere si tu ajoutes un champ total
+        // mere.setTotal(ca);
+        // mereRepo.save(mere);
 
         return mere.getId();
     }
+
 
 }

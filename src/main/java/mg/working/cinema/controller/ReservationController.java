@@ -1,6 +1,7 @@
 package mg.working.cinema.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import mg.working.cinema.dto.SeatDto;
 import mg.working.cinema.model.Siege;
 import mg.working.cinema.model.film.Seance;
 import mg.working.cinema.model.user.Utilisateur;
@@ -39,10 +40,20 @@ public class ReservationController {
         Seance seance = seanceService.getById(idSeance)
                 .orElseThrow(() -> new IllegalArgumentException("Séance introuvable : " + idSeance));
         List<Siege> availableSeats = availabilityService.getAvailableSeats(idSeance);
+
+        List<SeatDto> seatDtos = availableSeats.stream()
+                .map(s -> new SeatDto(
+                        s.getId(),
+                        s.getRangee(),
+                        s.getNumero(),
+                        s.getTypeSiege() != null ? s.getTypeSiege().getLibelle() : null
+                ))
+                .toList();
+
+        model.addAttribute("availableSeats", seatDtos);
         model.addAttribute("currentUri", request.getRequestURI());
         model.addAttribute("seance", seance);
         model.addAttribute("salle", seance.getSalle());
-        model.addAttribute("availableSeats", availableSeats);
 
         return "reservation/reservation-saisie";
     }
@@ -50,6 +61,7 @@ public class ReservationController {
     @PostMapping("/create")
     public String create(@RequestParam("idSeance") String idSeance,
                          @RequestParam(name = "seatIds[]", required = false) List<String> seatIds,
+                         @RequestParam(name = "enfant", defaultValue = "false") boolean enfant,
                          RedirectAttributes ra) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -61,14 +73,16 @@ public class ReservationController {
         }
 
         try {
-            String reservationId = reservationService.createReservation(idSeance, user, seatIds);
+            String reservationId = reservationService.createReservation(idSeance, user, seatIds, enfant);
             ra.addFlashAttribute("ok", "Réservation créée : " + reservationId);
             return "redirect:/seance/" + idSeance;
+
         } catch (Exception e) {
             ra.addFlashAttribute("ko", e.getMessage());
             return "redirect:/reservation/new/" + idSeance;
         }
     }
+
 
 
 }
