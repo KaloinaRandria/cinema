@@ -64,7 +64,10 @@ public class ReservationService {
     }
 
     @Transactional
-    public String createReservation(String seanceId, Utilisateur user, List<String> seatIds, boolean enfant) {
+    public String createReservation(String seanceId,
+                                    Utilisateur user,
+                                    List<String> seatIds,
+                                    Map<String, String> seatCategory) {
 
         if (user == null || user.getId() == null) {
             throw new IllegalStateException("Utilisateur invalide.");
@@ -107,10 +110,16 @@ public class ReservationService {
             Siege siege = siegeRepo.findById(seatId)
                     .orElseThrow(() -> new IllegalArgumentException("Siège introuvable : " + seatId));
 
+            String cat = (seatCategory != null) ? seatCategory.get(seatId) : null;
+            boolean enfant = "CHILD".equalsIgnoreCase(cat);  // ✅ enfant uniquement si CHILD
+
             double prix = calculerPrix(siege, enfant);
 
+            // debug (à enlever après)
+            System.out.println("seat=" + seatId + " cat=" + cat + " enfant=" + enfant + " prix=" + prix);
+
             ReservationFille rf = new ReservationFille();
-            rf.setId(idGenerator);
+            rf.setId(idGenerator); // à adapter si generate()
             rf.setReservationMere(mere);
             rf.setSiege(siege);
             rf.setPrix(prix);

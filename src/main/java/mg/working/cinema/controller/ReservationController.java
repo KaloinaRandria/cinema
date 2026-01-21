@@ -15,8 +15,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 
 @Controller
@@ -61,7 +62,7 @@ public class ReservationController {
     @PostMapping("/create")
     public String create(@RequestParam("idSeance") String idSeance,
                          @RequestParam(name = "seatIds[]", required = false) List<String> seatIds,
-                         @RequestParam(name = "enfant", defaultValue = "false") boolean enfant,
+                         HttpServletRequest request,
                          RedirectAttributes ra) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -72,8 +73,18 @@ public class ReservationController {
             return "redirect:/reservation/new/" + idSeance;
         }
 
+        // ✅ Extraire seatCategory[SEAT_ID] -> ADULT/CHILD
+        Map<String, String> seatCategory = new HashMap<>();
+        request.getParameterMap().forEach((key, values) -> {
+            if (key != null && key.startsWith("seatCategory[") && key.endsWith("]")) {
+                String seatId = key.substring("seatCategory[".length(), key.length() - 1);
+                String val = (values != null && values.length > 0) ? values[0] : null;
+                if (val != null) seatCategory.put(seatId, val);
+            }
+        });
+
         try {
-            String reservationId = reservationService.createReservation(idSeance, user, seatIds, enfant);
+            String reservationId = reservationService.createReservation(idSeance, user, seatIds, seatCategory);
             ra.addFlashAttribute("ok", "Réservation créée : " + reservationId);
             return "redirect:/seance/" + idSeance;
 
@@ -82,6 +93,7 @@ public class ReservationController {
             return "redirect:/reservation/new/" + idSeance;
         }
     }
+
 
 
 

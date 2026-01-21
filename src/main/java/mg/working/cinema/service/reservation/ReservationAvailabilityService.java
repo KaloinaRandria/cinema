@@ -40,6 +40,7 @@ public class ReservationAvailabilityService {
         System.out.println("all seats=" + all.size());
         System.out.println("occupied seats=" + occupied.size());
 
+
         return all.stream()
                 .filter(s -> !occupied.contains(s.getId()))
                 .collect(Collectors.toList());
