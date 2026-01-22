@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title th:text="'C.A Publicité - ' + ${month} + '/' + ${year}">C.A Publicité</title>
+
+    <th:block th:insert="~{fragment/load_css :: load_css}"></th:block>
+    <th:block th:insert="~{fragment/font :: font}"></th:block>
+    <th:block th:insert="~{fragment/load_script :: load_script}"></th:block>
+
+    <style>
+        .hero {
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(0,16,81,1) 0%, rgba(0,67,156,1) 100%);
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+        .hero:before{
+            content:"";
+            position:absolute;
+            inset:-80px;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.12), transparent 55%),
+            radial-gradient(circle at 80% 70%, rgba(255,255,255,.10), transparent 60%);
+            transform: rotate(8deg);
+        }
+        .hero-content { position: relative; z-index: 1; }
+
+        .badge-soft {
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.22);
+            color: #fff;
+        }
+
+        .info-card { border-radius: 18px; }
+
+        .kpi {
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,.08);
+            color: #001051;
+            min-width: 160px;
+        }
+        .kpi .text-muted { color: #6c757d !important; }
+
+        .pill {
+            border-radius: 999px;
+            padding: .45rem .85rem;
+            background: #f8fafc;
+            border: 1px solid rgba(0,0,0,.06);
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <section>
+
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold text-gradient-blue">
+                <i class="fas fa-bullhorn me-3 icon-gradient-blue"></i> C.A Publicité
+            </h1>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <a th:href="@{/pub/diffusions}" class="btn btn-gradient-blue">
+                    <i class="fas fa-list me-1"></i>Liste des diffusions
+                </a>
+
+                <a th:href="@{/pub/diffusions/add}" sec:authorize="hasRole('ADMIN')" class="btn btn-gradient-green">
+                    <i class="fas fa-plus-circle me-1"></i>Nouvelle diffusion
+                </a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragment/load_pop_up :: pop_up}"></div>
+
+        <!-- HERO -->
+        <div class="hero shadow-lg mb-4">
+            <div class="p-4 p-md-5 hero-content">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+
+                    <div>
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <span class="badge badge-soft px-3 py-2">
+                                <i class="far fa-calendar-alt me-2"></i>
+                                Période :
+                                <span th:text="${month}">12</span>/<span th:text="${year}">2025</span>
+                            </span>
+
+                            <span class="badge badge-soft px-3 py-2">
+                                <i class="fas fa-calculator me-2"></i>
+                                C.A total pubs
+                            </span>
+                        </div>
+
+                        <h2 class="fw-bold mb-1">
+                            Résultat du chiffre d’affaires publicitaire
+                        </h2>
+
+                        <div style="opacity:.85;">
+                            Sélectionne un <strong>mois</strong> et une <strong>année</strong> pour recalculer.
+                        </div>
+                    </div>
+
+                    <!-- KPI -->
+                    <div class="d-flex gap-3 flex-wrap justify-content-end">
+                        <div class="p-3 kpi text-center">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-money-bill-wave me-1"></i>C.A
+                            </div>
+                            <div class="fw-bold fs-4">
+                                <span th:text="${#numbers.formatDecimal(ca, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                <span class="text-muted fs-6">Ar</span>
+                            </div>
+                            <div class="text-muted small">sur la période</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu -->
+        <div class="row g-4">
+
+            <!-- Formulaire -->
+            <div class="col-12 col-lg-6">
+                <div class="card info-card shadow-sm border-0">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-filter me-2 icon-gradient-blue"></i> Filtrer par période
+                        </h5>
+                        <small class="text-muted">Choisis mois + année, puis valide</small>
+                    </div>
+
+                    <div class="card-body px-4 pb-4">
+                        <form th:action="@{/pub/ca}" method="get" class="row g-3">
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold">Mois</label>
+                                <select class="form-select" name="month" required>
+                                    <option th:value="1"  th:selected="${month == 1}">Janvier</option>
+                                    <option th:value="2"  th:selected="${month == 2}">Février</option>
+                                    <option th:value="3"  th:selected="${month == 3}">Mars</option>
+                                    <option th:value="4"  th:selected="${month == 4}">Avril</option>
+                                    <option th:value="5"  th:selected="${month == 5}">Mai</option>
+                                    <option th:value="6"  th:selected="${month == 6}">Juin</option>
+                                    <option th:value="7"  th:selected="${month == 7}">Juillet</option>
+                                    <option th:value="8"  th:selected="${month == 8}">Août</option>
+                                    <option th:value="9"  th:selected="${month == 9}">Septembre</option>
+                                    <option th:value="10" th:selected="${month == 10}">Octobre</option>
+                                    <option th:value="11" th:selected="${month == 11}">Novembre</option>
+                                    <option th:value="12" th:selected="${month == 12}">Décembre</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold">Année</label>
+                                <input type="number"
+                                       class="form-control"
+                                       name="year"
+                                       min="2000"
+                                       max="2100"
+                                       th:value="${year}"
+                                       required>
+                            </div>
+
+                            <div class="col-12 d-flex gap-2 flex-wrap mt-1">
+                                <button type="submit" class="btn btn-gradient-blue">
+                                    <i class="fas fa-search me-1"></i> Calculer
+                                </button>
+
+                                <!-- raccourci décembre 2025 -->
+                                <a class="btn btn-outline-secondary" th:href="@{/pub/ca(year=2025,month=12)}">
+                                    <i class="fas fa-star me-1"></i> Décembre 2025
+                                </a>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Le résultat correspond à <strong>SUM(montantTotal)</strong> des diffusions
+                                    entre le 1er jour du mois et le 1er jour du mois suivant.
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résultat / détails -->
+            <div class="col-12 col-lg-6">
+                <div class="card info-card shadow-sm border-0">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-receipt me-2 icon-gradient-blue"></i> Résultat
+                        </h5>
+                        <small class="text-muted">C.A publicitaire sur la période</small>
+                    </div>
+
+                    <div class="card-body px-4 pb-4">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="pill">
+                                <strong>Période :</strong>
+                                <span th:text="${month}">12</span>/<span th:text="${year}">2025</span>
+                            </span>
+                            <span class="pill">
+                                <strong>Calcul :</strong> SUM(montantTotal)
+                            </span>
+                        </div>
+
+                        <div class="mb-2 text-muted small">
+                            <i class="fas fa-money-bill-wave me-2"></i>C.A total
+                        </div>
+                        <div class="fw-bold" style="font-size: 1.8rem; color:#001051;">
+                            <span th:text="${#numbers.formatDecimal(ca, 0, 'COMMA', 0, 'POINT')}">0</span>
+                            <span class="text-muted" style="font-size: 1rem;">Ar</span>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="text-muted">
+                            Astuce : tu peux aussi ajouter une table “top sociétés” ou “top offres”
+                            si tu veux un détail du C.A par société/offre.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+</div>
+
+</body>
+</html>

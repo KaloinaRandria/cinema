@@ -50,9 +50,11 @@ public class ReservationService {
         }
 
         double prixBase = siege.getTypeSiege().getPrix();
+        double remise = (100.0 - siege.getTypeSiege().getRemise()) / 100.0;
+
 
         // Enfant = -50% sur tous les types
-        return enfant ? (prixBase * 0.5) : prixBase;
+        return enfant ? (prixBase * remise) : prixBase;
     }
 
     private double calculerCA(List<ReservationFille> lignes) {
