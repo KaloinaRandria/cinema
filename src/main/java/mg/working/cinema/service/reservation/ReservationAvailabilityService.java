@@ -35,8 +35,15 @@ public class ReservationAvailabilityService {
         List<Siege> all = siegeRepository.findBySalleOrdered(salleId);
         Set<String> occupied = new HashSet<>(reservationFilleRepository.findOccupiedSeatIdsBySeance(seanceId));
 
+        System.out.println("seanceId=" + seanceId);
+        System.out.println("salleId=" + salleId);
+        System.out.println("all seats=" + all.size());
+        System.out.println("occupied seats=" + occupied.size());
+
+
         return all.stream()
                 .filter(s -> !occupied.contains(s.getId()))
                 .collect(Collectors.toList());
     }
+
 }

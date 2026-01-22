@@ -1,6 +1,8 @@
 package mg.working.cinema.service.film;
 
+import mg.working.cinema.model.Siege;
 import mg.working.cinema.model.film.Seance;
+import mg.working.cinema.model.reservation.ReservationFille;
 import mg.working.cinema.repository.film.SeanceRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,5 +83,7 @@ public class SeanceService {
     public Optional<Seance> getById(String id) {
         return seanceRepo.findById(id);
     }
+
+
 }
 
