@@ -53,12 +53,12 @@ public class SeanceService {
                 );
             }
 
-            // 4️⃣ Séance dans le futur (optionnel)
-            if (seance.getDebut().isBefore(LocalDateTime.now())) {
-                throw new IllegalArgumentException(
-                        "Impossible de créer une séance dans le passé"
-                );
-            }
+//            // 4️⃣ Séance dans le futur (optionnel)
+//            if (seance.getDebut().isBefore(LocalDateTime.now())) {
+//                throw new IllegalArgumentException(
+//                        "Impossible de créer une séance dans le passé"
+//                );
+//            }
 
             // 5️⃣ Conflit de séance dans la même salle
             boolean conflitSalle = seanceRepo.existsConflitSalle(

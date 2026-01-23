@@ -670,3 +670,20 @@ create sequence s_societe_pub increment by 1 no cycle;
 create sequence s_offre_pub increment by 1 no cycle;
 create sequence s_diffusion_pub increment by 1 no cycle;
 create sequence s_paiement_pub increment by 1 no cycle;
+
+select sum(montant_total) as total
+from diffusion_pub where id_seance = 'SEA7';
+
+select
+    s.id_seance as id,
+    f.titre as titre,
+    s.debut,
+    sum(dp.montant_total) as pub,
+    rm.montant_total as resa,
+    (sum(dp.montant_total) + rm.montant_total) as total
+from seance s
+join public.diffusion_pub dp on s.id_seance = dp.id_seance
+join public.reservation_mere rm on s.id_seance = rm.id_seance
+join film f on s.id_film = f.id_film
+group by s.id_seance, rm.id_reservation_mere, f.id_film;
+

@@ -105,6 +105,13 @@
                                 Programmer une séance
                             </a>
                         </li>
+                        <li>
+                            <a class="nav-link text-white d-flex align-items-center sidebar-link"
+                               th:href="@{/report/recettes-seances}"
+                               th:classappend="${currentUri.contains('/report/recettes-seances') ? 'active' : ''}">
+                                <i class="fas fa-chart-bar me-3"></i> Recettes séances
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -211,6 +218,18 @@
                                 <i class="fas fa-cash-register me-2"></i> Paiements
                             </a>
                         </li>
+
+
+                        <li>
+                            <a class="nav-link text-white sidebar-sub"
+                               th:href="@{/pub/facturation}"
+                               th:classappend="${currentUri.contains('/pub/facturation') ? 'active' : ''}">
+                                <i class="fas fa-file-invoice-dollar me-2"></i> Facturation
+                            </a>
+                        </li>
+
+
+
 
 
                     </ul>

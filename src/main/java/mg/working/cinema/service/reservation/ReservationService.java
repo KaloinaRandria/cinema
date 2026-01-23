@@ -142,7 +142,7 @@ public class ReservationService {
     }
 
     public double getMontantTotalReservation(Seance seance) {
-       return this.mereRepo.findMontantTotalBySeance(seance);
+        return mereRepo.findMontantTotalBySeance(seance);
     }
 
 }
