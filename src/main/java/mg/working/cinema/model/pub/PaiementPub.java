@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mg.working.cinema.service.util.IdGenerator;
 
 import java.time.LocalDateTime;
 
@@ -34,4 +35,8 @@ public class PaiementPub {
 
     @Column(name = "reference", length = 100)
     private String reference;
+
+    public void setIdPaiementPub(IdGenerator idGenerator) {
+       this.idPaiementPub = idGenerator.generateId("PPU", "s_paiement_pub");
+    }
 }

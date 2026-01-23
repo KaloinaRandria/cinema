@@ -36,7 +36,7 @@ public class PaiementPubService {
         SocietePub societe = societePubService.getById(idSociete);
 
         PaiementPub p = new PaiementPub();
-        p.setIdPaiementPub(idGenerator.generateId("PPU", "s_paiement_pub"));
+        p.setIdPaiementPub(idGenerator);
         p.setSocietePub(societe);
         p.setMontant(montant);
         p.setDatePaiement(datePaiement != null ? datePaiement : LocalDateTime.now());
