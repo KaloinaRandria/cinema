@@ -1,12 +1,11 @@
 package mg.working.cinema.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import mg.working.cinema.repository.report.SeanceRecetteProjection;
+import mg.working.cinema.service.report.RecetteSeanceGroupDto;
 import mg.working.cinema.service.report.SeanceRecetteService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,15 +20,31 @@ public class ReportController {
     }
 
     @GetMapping("/recettes-seances")
-    public String recettesSeances(Model model, HttpServletRequest request) {
+    public String recettesSeances(
+            @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(value = "year", required = false) Integer year,
+            Model model,
+            HttpServletRequest request
+    ) {
         model.addAttribute("currentUri", request.getRequestURI());
 
-        List<SeanceRecetteProjection> rows = seanceRecetteService.getRecettesParSeance();
+        int m = (month == null ? 12 : month);
+        int y = (year == null ? 2025 : year);
 
-        model.addAttribute("rows", rows);
-        model.addAttribute("totalPub", seanceRecetteService.totalPub(rows));
-        model.addAttribute("totalResa", seanceRecetteService.totalResa(rows));
-        model.addAttribute("totalGeneral", seanceRecetteService.totalGeneral(rows));
+        List<RecetteSeanceGroupDto> seances = seanceRecetteService.getRecettesParSeance(y, m);
+
+        model.addAttribute("month", m);
+        model.addAttribute("year", y);
+
+        model.addAttribute("seances", seances);
+
+        model.addAttribute("totalPub", seanceRecetteService.totalPub(seances));
+        model.addAttribute("totalResa", seanceRecetteService.totalResa(seances));
+        model.addAttribute("totalGeneral", seanceRecetteService.totalGeneral(seances));
+
+        // ✅ nouveaux indicateurs pub payée/restante
+        model.addAttribute("totalPubPaye", seanceRecetteService.totalPubPaye(seances));
+        model.addAttribute("totalPubReste", seanceRecetteService.totalPubReste(seances));
 
         return "report/recettes-seances";
     }
