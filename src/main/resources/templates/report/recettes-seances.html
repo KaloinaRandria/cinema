@@ -117,19 +117,10 @@
                     <span class="text-muted fs-6">Ar</span>
                 </div>
             </div>
-
             <div class="p-3 kpi text-center">
-                <div class="text-muted small mb-1"><i class="fas fa-hand-holding-usd me-1"></i>Total Pub payé</div>
+                <div class="text-muted small mb-1"><i class="fas fa-popcorn me-1"></i>Total Extra</div>
                 <div class="fw-bold fs-4">
-                    <span th:text="${#numbers.formatDecimal(totalPubPaye, 0, 'COMMA', 0, 'POINT')}">0</span>
-                    <span class="text-muted fs-6">Ar</span>
-                </div>
-            </div>
-
-            <div class="p-3 kpi text-center">
-                <div class="text-muted small mb-1"><i class="fas fa-hourglass-half me-1"></i>Total Reste Pub</div>
-                <div class="fw-bold fs-4">
-                    <span th:text="${#numbers.formatDecimal(totalPubReste, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    <span th:text="${#numbers.formatDecimal(totalExtra, 0, 'COMMA', 0, 'POINT')}">0</span>
                     <span class="text-muted fs-6">Ar</span>
                 </div>
             </div>
@@ -149,6 +140,24 @@
                     <span class="text-muted fs-6">Ar</span>
                 </div>
             </div>
+
+            <div class="p-3 kpi text-center">
+                <div class="text-muted small mb-1"><i class="fas fa-hand-holding-usd me-1"></i>Total Pub payé</div>
+                <div class="fw-bold fs-4">
+                    <span th:text="${#numbers.formatDecimal(totalPubPaye, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    <span class="text-muted fs-6">Ar</span>
+                </div>
+            </div>
+
+            <div class="p-3 kpi text-center">
+                <div class="text-muted small mb-1"><i class="fas fa-hourglass-half me-1"></i>Total Reste Pub</div>
+                <div class="fw-bold fs-4">
+                    <span th:text="${#numbers.formatDecimal(totalPubReste, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    <span class="text-muted fs-6">Ar</span>
+                </div>
+            </div>
+
+
 
             <span class="pill align-self-center">
                 <i class="fas fa-info-circle me-2"></i>
@@ -183,12 +192,16 @@
 
                             <th class="text-end"><i class="fas fa-ticket-alt me-2 icon-gradient-light-blue"></i>Tickets</th>
 
+                            <!-- ✅ NEW -->
+                            <th class="text-end"><i class="fas fa-popcorn me-2 icon-gradient-light-blue"></i>Extra</th>
+
                             <th class="text-end"><i class="fas fa-bullhorn me-2 icon-gradient-light-blue"></i>Pub Total</th>
                             <th class="text-end"><i class="fas fa-hand-holding-usd me-2 icon-gradient-light-blue"></i>Pub Payé</th>
                             <th class="text-end"><i class="fas fa-hourglass-half me-2 icon-gradient-light-blue"></i>Reste Pub</th>
 
                             <th class="text-end"><i class="fas fa-coins me-2 icon-gradient-light-blue"></i>Total</th>
                         </tr>
+
                         </thead>
 
                         <tbody>
@@ -199,6 +212,10 @@
 
                             <td class="text-end">
                                 <span class="fw-bold" th:text="${#numbers.formatDecimal(s.resa, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                <span class="text-muted">Ar</span>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold" th:text="${#numbers.formatDecimal(s.extra, 0, 'COMMA', 0, 'POINT')}">0</span>
                                 <span class="text-muted">Ar</span>
                             </td>
 

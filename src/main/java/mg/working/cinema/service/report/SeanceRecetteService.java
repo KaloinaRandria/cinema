@@ -1,6 +1,7 @@
 package mg.working.cinema.service.report;
 
 import mg.working.cinema.repository.pub.PaiementPubRepo;
+import mg.working.cinema.repository.report.ExtraReportRepo;
 import mg.working.cinema.repository.report.SeanceRecetteLineProjection;
 import mg.working.cinema.repository.report.SeanceRecetteRepo;
 import mg.working.cinema.repository.report.SocieteMontantProjection;
@@ -15,11 +16,15 @@ public class SeanceRecetteService {
 
     private final SeanceRecetteRepo seanceRecetteRepo;
     private final PaiementPubRepo paiementPubRepo;
+    private final ExtraReportRepo extraReportRepo;
+
 
     public SeanceRecetteService(SeanceRecetteRepo seanceRecetteRepo,
-                                PaiementPubRepo paiementPubRepo) {
+                                PaiementPubRepo paiementPubRepo,
+                                ExtraReportRepo extraReportRepo) {
         this.seanceRecetteRepo = seanceRecetteRepo;
         this.paiementPubRepo = paiementPubRepo;
+        this.extraReportRepo = extraReportRepo;
     }
 
     // -------- Période --------
@@ -37,6 +42,15 @@ public class SeanceRecetteService {
     public List<RecetteSeanceGroupDto> getRecettesParSeance(int year, int month) {
         LocalDateTime start = startOf(year, month);
         LocalDateTime end = endOf(year, month);
+
+        // ✅ 0) Extras par séance (popcorn etc.)  ---> ICI
+        Map<String, Double> extraBySeance = new HashMap<>();
+        var extraRows = extraReportRepo.totalExtraBySeanceBetween(start, end);
+        for (var p : extraRows) {
+            if (p.getIdSeance() != null) {
+                extraBySeance.put(p.getIdSeance(), p.getMontant() == null ? 0d : p.getMontant());
+            }
+        }
 
         // 1) Lignes base: (séance × société)
         List<SeanceRecetteLineProjection> lines = seanceRecetteRepo.getRecettesParSeanceLines(start, end);
@@ -88,17 +102,24 @@ public class SeanceRecetteService {
                 double resa = p.getResa() == null ? 0d : p.getResa();
                 g.setResa(resa);
 
+                // ✅ extra de la séance
+                double extra = extraBySeance.getOrDefault(idSeance, 0d);
+                g.setExtra(extra);
+
                 g.setPubTotalSeance(0d);
                 g.setPubPayeTotalSeance(0d);
                 g.setPubResteTotalSeance(0d);
 
-                g.setTotalSeance(resa);
+                // ✅ total séance = resa + extra (au départ, avant pub)
+                g.setTotalSeance(resa + extra);
 
                 bySeance.put(idSeance, g);
             }
 
             // Séance sans pub => idSociete null : on ne crée pas de sous-ligne société
             if (p.getIdSociete() == null) {
+                // ✅ même si pas de pub, totalSeance doit rester resa + extra
+                g.setTotalSeance(g.getResa() + g.getExtra());
                 continue;
             }
 
@@ -127,8 +148,8 @@ public class SeanceRecetteService {
             g.setPubPayeTotalSeance(g.getPubPayeTotalSeance() + payeSocieteSeance);
             g.setPubResteTotalSeance(g.getPubResteTotalSeance() + resteSocieteSeance);
 
-            // total séance = resa + pub total séance
-            g.setTotalSeance(g.getResa() + g.getPubTotalSeance());
+            // ✅ total séance = resa + pub + extra
+            g.setTotalSeance(g.getResa() + g.getPubTotalSeance() + g.getExtra());
         }
 
         return new ArrayList<>(bySeance.values());
@@ -154,4 +175,11 @@ public class SeanceRecetteService {
     public double totalPubReste(List<RecetteSeanceGroupDto> seances) {
         return seances.stream().mapToDouble(RecetteSeanceGroupDto::getPubResteTotalSeance).sum();
     }
+
+    public double totalExtra(List<RecetteSeanceGroupDto> seances) {
+        return seances.stream().mapToDouble(RecetteSeanceGroupDto::getExtra).sum();
+    }
+
+
+
 }

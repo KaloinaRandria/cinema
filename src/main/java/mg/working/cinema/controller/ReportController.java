@@ -46,6 +46,9 @@ public class ReportController {
         model.addAttribute("totalPubPaye", seanceRecetteService.totalPubPaye(seances));
         model.addAttribute("totalPubReste", seanceRecetteService.totalPubReste(seances));
 
+//      //extras
+        model.addAttribute("totalExtra", seanceRecetteService.totalExtra(seances));
+
         return "report/recettes-seances";
     }
 }

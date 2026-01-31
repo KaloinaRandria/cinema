@@ -24,6 +24,8 @@ public class RecetteSeanceGroupDto {
     private double pubResteTotalSeance;
 
     private double totalSeance;
+    private double extra;
+
 
     // lignes société×séance
     private List<RecetteSocieteLineDto> societes = new ArrayList<>();

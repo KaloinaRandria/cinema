@@ -671,6 +671,8 @@ create sequence s_offre_pub increment by 1 no cycle;
 create sequence s_diffusion_pub increment by 1 no cycle;
 create sequence s_paiement_pub increment by 1 no cycle;
 
+create sequence s_reservation_extra increment by 1 no cycle;
+
 select sum(montant_total) as total
 from diffusion_pub where id_seance = 'SEA7';
 
