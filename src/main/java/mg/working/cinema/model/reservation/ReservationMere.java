@@ -31,8 +31,11 @@ public class ReservationMere {
     Utilisateur utilisateur;
     @ManyToOne @JoinColumn(name = "id_seance", referencedColumnName = "id_seance", nullable = false)
     Seance seance;
+    @Column(name = "montant_total")
+    double montantTotal;
 
     public void setId(IdGenerator idGenerator) {
         this.id = idGenerator.generateId("REM", "s_reservation_mere");
     }
+
 }

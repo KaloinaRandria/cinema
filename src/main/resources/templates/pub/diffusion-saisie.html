@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Nouvelle diffusion publicitaire</title>
+
+    <th:block th:insert="~{fragment/load_css :: load_css}"></th:block>
+    <th:block th:insert="~{fragment/font :: font}"></th:block>
+    <th:block th:insert="~{fragment/load_script :: load_script}"></th:block>
+
+    <style>
+        .info-card { border-radius: 18px; }
+        .pill {
+            border-radius: 999px;
+            padding: .45rem .85rem;
+            background: #f8fafc;
+            border: 1px solid rgba(0,0,0,.06);
+        }
+        .kpi {
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,.08);
+            color: #001051;
+            min-width: 180px;
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <section>
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold text-gradient-blue">
+                <i class="fas fa-plus-circle me-3 icon-gradient-blue"></i> Nouvelle diffusion
+            </h1>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <a th:href="@{/pub/diffusions}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Retour liste
+                </a>
+                <a th:href="@{/pub/ca}" class="btn btn-gradient-blue">
+                    <i class="fas fa-calculator me-1"></i>Voir C.A
+                </a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragment/load_pop_up :: pop_up}"></div>
+
+        <!-- Si tu rediriges ici avec flash "ko" -->
+        <div th:if="${ko}" class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${ko}"></span>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Form -->
+            <div class="col-12 col-lg-7">
+                <div class="card info-card shadow-sm border-0">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-pen me-2 icon-gradient-blue"></i> Formulaire
+                        </h5>
+                        <small class="text-muted">Choisis séance + société + offre, puis indique le nombre de diffusions</small>
+                    </div>
+
+                    <div class="card-body px-4 pb-4">
+                        <form th:action="@{/pub/diffusions/create}" method="post" class="row g-3">
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Séance</label>
+                                <select class="form-select" name="idSeance" required>
+                                    <option value="" selected disabled>-- Choisir une séance --</option>
+                                    <option th:each="s : ${seances}"
+                                            th:value="${s.id}"
+                                            th:text="${s.id + ' - ' + (s.film != null ? s.film.titre : '')}">
+                                        SEA001 - Film
+                                    </option>
+                                </select>
+                                <small class="text-muted">Astuce : tu peux afficher date/heure ici si ton modèle le contient.</small>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold">Société</label>
+                                <select class="form-select" name="idSociete" required>
+                                    <option value="" selected disabled>-- Choisir une société --</option>
+                                    <option th:each="sc : ${societes}"
+                                            th:value="${sc.id}"
+                                            th:text="${sc.nom}">
+                                        Société X
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold">Offre</label>
+                                <select class="form-select" name="idOffre" id="offreSelect" required>
+                                    <option value="" selected disabled>-- Choisir une offre --</option>
+                                    <option th:each="o : ${offres}"
+                                            th:value="${o.id}"
+                                            th:text="${o.libelle}"
+                                            th:attr="data-prix=${o.prixUnitaire}">
+                                        Offre 30s
+                                    </option>
+                                </select>
+
+                                <small class="text-muted">
+                                    Prix unitaire détecté : <span id="prixUnitaireLabel">0</span> Ar
+                                </small>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold">Nombre de diffusions</label>
+                                <input type="number" class="form-control" name="nbDiffusions" id="nbDiffusions"
+                                       min="1" value="1" required>
+                            </div>
+
+                            <div class="col-12 col-md-6 d-flex align-items-end">
+                                <div class="w-100">
+                                    <label class="form-label fw-semibold">Montant total (aperçu)</label>
+                                    <div class="pill">
+                                        <span class="fw-bold" id="montantTotalLabel">0</span>
+                                        <span class="text-muted">Ar</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-flex gap-2 flex-wrap mt-2">
+                                <button type="submit" class="btn btn-gradient-green" sec:authorize="hasRole('ADMIN')">
+                                    <i class="fas fa-save me-1"></i> Enregistrer
+                                </button>
+
+                                <a th:href="@{/pub/diffusions}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i> Annuler
+                                </a>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Le montant total final est calculé côté serveur :
+                                    <strong>montantTotal = nbDiffusions × prixUnitaire(offre)</strong>.
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side summary -->
+            <div class="col-12 col-lg-5">
+                <div class="card info-card shadow-sm border-0">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-receipt me-2 icon-gradient-blue"></i> Résumé
+                        </h5>
+                        <small class="text-muted">Vérifie les informations avant validation</small>
+                    </div>
+
+                    <div class="card-body px-4 pb-4">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="pill"><strong>Calcul :</strong> nbDiffusions × prixUnitaire</span>
+                            <span class="pill"><strong>Date :</strong> maintenant</span>
+                        </div>
+
+                        <div class="p-3 kpi text-center">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-money-bill-wave me-1"></i>Aperçu montant total
+                            </div>
+                            <div class="fw-bold fs-4">
+                                <span id="montantTotalKpi">0</span>
+                                <span class="text-muted fs-6">Ar</span>
+                            </div>
+                            <div class="text-muted small">avant enregistrement</div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="text-muted small">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Si tu veux : on peut ajouter un champ “dateDiffusion” sélectionnable,
+                            au lieu de mettre <code>LocalDateTime.now()</code>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            function formatNumber(n) {
+                if (isNaN(n)) return "0";
+                return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+
+            function getPrixUnitaire() {
+                const select = document.getElementById("offreSelect");
+                const opt = select.options[select.selectedIndex];
+                const prix = opt ? opt.getAttribute("data-prix") : "0";
+                return parseFloat(prix || "0");
+            }
+
+            function refreshPreview() {
+                const prix = getPrixUnitaire();
+                const nb = parseInt(document.getElementById("nbDiffusions").value || "0", 10);
+                const total = (nb > 0 ? nb : 0) * (prix > 0 ? prix : 0);
+
+                document.getElementById("prixUnitaireLabel").textContent = formatNumber(prix);
+                document.getElementById("montantTotalLabel").textContent = formatNumber(total);
+                document.getElementById("montantTotalKpi").textContent = formatNumber(total);
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                document.getElementById("offreSelect").addEventListener("change", refreshPreview);
+                document.getElementById("nbDiffusions").addEventListener("input", refreshPreview);
+                refreshPreview();
+            });
+        </script>
+
+    </section>
+</div>
+</body>
+</html>

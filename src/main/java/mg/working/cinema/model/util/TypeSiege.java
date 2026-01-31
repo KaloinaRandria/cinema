@@ -25,6 +25,8 @@ public class TypeSiege {
     String id;
     String libelle;
     double prix;
+    @Column(nullable = true)
+    double remise = 0.0;
 
     public void setPrix(String prix) {
         this.prix = Double.parseDouble(prix);

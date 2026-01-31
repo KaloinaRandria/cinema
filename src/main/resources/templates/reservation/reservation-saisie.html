@@ -8,9 +8,46 @@
     <th:block th:insert="~{fragment/font :: font}"></th:block>
 
     <style>
-        .seat-line { display:flex; gap:.5rem; align-items:center; margin-bottom:.5rem; }
-        .seat-line .btn { white-space: nowrap; }
-        .seat-select { min-width: 220px; }
+        .seat-map { display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start; }
+        .seat-grid { flex: 1 1 620px; }
+        .seat-side { flex: 0 0 360px; min-width: 320px; }
+
+        .row-line { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; }
+        .row-label { width: 38px; font-weight: 700; color:#5b6b7a; text-align:right; padding-right:.25rem; }
+
+        .seats { display:flex; gap:.35rem; flex-wrap:wrap; }
+        .seat-btn {
+            width: 40px; height: 36px;
+            border-radius: 10px;
+            border: 1px solid #d0d7de;
+            background: #f8fafc;
+            font-size: .8rem;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer;
+            user-select:none;
+        }
+        .seat-btn:hover { filter: brightness(0.98); }
+
+        .seat-standard { background:#f2f7ff; border-color:#cfe1ff; }
+        .seat-premium  { background:#fff7e6; border-color:#ffe2a8; }
+        .seat-vip      { background:#fbe9ff; border-color:#f1b8ff; }
+
+        .seat-selected { outline: 3px solid rgba(0,0,0,0.18); }
+        .seat-disabled { opacity:.45; cursor:not-allowed; text-decoration: line-through; }
+
+        .legend { display:flex; gap:.75rem; flex-wrap:wrap; }
+        .legend span { display:flex; align-items:center; gap:.4rem; font-size:.9rem; }
+        .dot { width:12px; height:12px; border-radius:50%; display:inline-block; border:1px solid rgba(0,0,0,0.15); }
+        .dot-standard { background:#f2f7ff; }
+        .dot-premium  { background:#fff7e6; }
+        .dot-vip      { background:#fbe9ff; }
+
+        .mini { font-size:.85rem; color:#6b7280; }
+        .qty { width: 90px; }
+        .seat-assign-list { max-height: 210px; overflow:auto; border:1px solid #eee; border-radius:12px; padding:.5rem; }
+        .assign-item { display:flex; justify-content:space-between; align-items:center; padding:.35rem .25rem; border-bottom:1px dashed #eee; }
+        .assign-item:last-child { border-bottom:none; }
+        .pill { font-size:.75rem; padding:.15rem .45rem; border-radius: 999px; border:1px solid #e5e7eb; }
     </style>
 </head>
 <body>
@@ -36,58 +73,149 @@
                     <strong>Séance :</strong> <span th:text="${seance.id}"></span><br>
                     <strong>Film :</strong> <span th:text="${seance.film.titre}"></span><br>
                     <strong>Salle :</strong> <span th:text="${salle.nom}"></span><br>
-                    <strong>Prix :</strong> <span th:text="${seance.prix}"></span> Ar / siège
+                    <strong>Tarifs adulte :</strong>
+                    <span class="mini">
+                        Standard: <b th:text="${prixStandard}"></b> Ar —
+                        Premium: <b th:text="${prixPremium}"></b> Ar —
+                        VIP: <b th:text="${prixVip}"></b> Ar
+                    </span><br>
+                    <strong>Tarif enfant :</strong> <span class="mini">-50% sur tous les types</span>
                 </div>
 
                 <div class="alert alert-info" th:if="${#lists.isEmpty(availableSeats)}">
                     Aucun siège disponible pour cette séance.
                 </div>
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    window.AVAILABLE_SEATS = /*[[${availableSeats}]]*/ [];
+                    window.PRICES = {
+                        STANDARD: Number(/*[[${prixStandard}]]*/ 0),
+                        PREMIUM:  Number(/*[[${prixPremium}]]*/ 0),
+                        VIP:      Number(/*[[${prixVip}]]*/ 0)
+                    };
+                    window.CHILD_RATE = 0.5;
+                    /*]]>*/
+                </script>
 
                 <form th:if="${!#lists.isEmpty(availableSeats)}"
                       th:action="@{/reservation/create}" method="post" id="reservationForm">
-
                     <input type="hidden" name="idSeance" th:value="${seance.id}">
 
-                    <!-- Données (sans API) : on injecte la liste des sièges dispo en JS -->
-                    <script th:inline="javascript">
-                        /*<![CDATA[*/
-                        const AVAILABLE_SEATS = /*[[${availableSeats}]]*/ [];
-                        /*]]>*/
-                    </script>
+                    <div class="seat-map mt-3">
+                        <!-- PLAN DE SALLE -->
+                        <div class="seat-grid">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0">
+                                    <i class="fas fa-chair me-2"></i>Plan de salle
+                                </h6>
+                                <div class="legend">
+                                    <span><i class="dot dot-standard"></i> Standard</span>
+                                    <span><i class="dot dot-premium"></i> Premium</span>
+                                    <span><i class="dot dot-vip"></i> VIP</span>
+                                </div>
+                            </div>
 
+                            <div class="alert alert-warning d-none" id="alertNoSeat">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Sélectionnez au moins un siège.
+                            </div>
 
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="fw-bold mb-0">
-                            <i class="fas fa-chair me-2"></i>Choisir vos sièges
-                        </h6>
+                            <div id="seatMap"></div>
 
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-gradient-blue" id="btnAddSeat">
-                                <i class="fas fa-plus me-1"></i>Ajouter un siège
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnReset">
-                                <i class="fas fa-undo me-1"></i>Réinitialiser
-                            </button>
+                            <div class="mt-3 d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnReset">
+                                    <i class="fas fa-undo me-1"></i>Réinitialiser
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div id="seatLines" class="mt-2"></div>
+                        <!-- PANNEAU DROIT -->
+                        <div class="seat-side">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-2">
+                                        <i class="fas fa-sliders-h me-2"></i>Répartition
+                                    </h6>
 
-                    <div class="alert alert-warning mt-3 d-none" id="alertDuplicate">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Vous avez sélectionné le même siège plusieurs fois.
-                    </div>
+                                    <div class="mini mb-2">
+                                        Choisis d’abord les sièges sur le plan, ensuite répartis Adultes/Enfants par type.
+                                    </div>
 
-                    <div class="alert alert-info mt-3" id="recapBox">
-                        <div><strong>Sièges :</strong> <span id="recapSeats">Aucun</span></div>
-                        <div><strong>Nombre :</strong> <span id="recapCount">0</span></div>
-                        <div><strong>Total :</strong> <span id="recapTotal">0</span> Ar</div>
-                    </div>
+                                    <!-- Tableau répartition -->
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle mb-2">
+                                            <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th class="text-end">Sélectionnés</th>
+                                                <th class="text-end">Adultes</th>
+                                                <th class="text-end">Enfants</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td><span class="pill">Standard</span></td>
+                                                <td class="text-end" id="cntSTANDARD">0</td>
+                                                <td class="text-end">
+                                                    <input class="form-control form-control-sm qty ms-auto"
+                                                           type="number" min="0" value="0" id="adultSTANDARD">
+                                                </td>
+                                                <td class="text-end" id="childSTANDARD">0</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="pill">Premium</span></td>
+                                                <td class="text-end" id="cntPREMIUM">0</td>
+                                                <td class="text-end">
+                                                    <input class="form-control form-control-sm qty ms-auto"
+                                                           type="number" min="0" value="0" id="adultPREMIUM">
+                                                </td>
+                                                <td class="text-end" id="childPREMIUM">0</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="pill">VIP</span></td>
+                                                <td class="text-end" id="cntVIP">0</td>
+                                                <td class="text-end">
+                                                    <input class="form-control form-control-sm qty ms-auto"
+                                                           type="number" min="0" value="0" id="adultVIP">
+                                                </td>
+                                                <td class="text-end" id="childVIP">0</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
 
-                    <div class="mt-3">
-                        <button class="btn btn-gradient-green" type="submit" id="btnSubmit" disabled>
-                            <i class="fas fa-check-circle me-1"></i> Confirmer
-                        </button>
+                                    <div class="alert alert-danger d-none" id="alertBadSplit">
+                                        <i class="fas fa-times-circle me-2"></i>
+                                        Répartition invalide : Adultes ne doit pas dépasser les sièges sélectionnés.
+                                    </div>
+
+                                    <!-- Attribution par siège (si besoin) -->
+                                    <div class="mt-3">
+                                        <div class="fw-bold mb-2">
+                                            <i class="fas fa-user-tag me-2"></i>Attribution par siège
+                                            <div class="mini">Utile quand un type est mixte (ex : VIP : 3 adultes + 2 enfants).</div>
+                                        </div>
+                                        <div class="seat-assign-list" id="assignList">
+                                            <div class="mini">Sélectionne des sièges pour afficher la liste.</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Recap -->
+                                    <div class="alert alert-info mt-3" id="recapBox">
+                                        <div><strong>Sièges :</strong> <span id="recapSeats">Aucun</span></div>
+                                        <div><strong>Nombre :</strong> <span id="recapCount">0</span></div>
+                                        <div><strong>Total :</strong> <span id="recapTotal">0</span> Ar</div>
+                                    </div>
+
+                                    <button class="btn btn-gradient-green w-100" type="submit" id="btnSubmit" disabled>
+                                        <i class="fas fa-check-circle me-1"></i> Confirmer
+                                    </button>
+
+                                    <!-- conteneur hidden inputs -->
+                                    <div id="hiddenInputs"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </form>
 
@@ -101,108 +229,344 @@
     </section>
 </div>
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    const PRIX = Number(/*[[${seance.prix}]]*/ 0);
-    /*]]>*/
-</script>
-
-
 <script>
     /*<![CDATA[*/
     document.addEventListener('DOMContentLoaded', () => {
-        const seatLines = document.getElementById('seatLines');
-        const btnAddSeat = document.getElementById('btnAddSeat');
+        const form = document.getElementById('reservationForm');
+        if (!form) return;
+
+        // ---- Data from Thymeleaf (window.*) ----
+        const AVAILABLE_SEATS = Array.isArray(window.AVAILABLE_SEATS) ? window.AVAILABLE_SEATS : [];
+        const PRICES = window.PRICES || { STANDARD: 0, PREMIUM: 0, VIP: 0 };
+        const CHILD_RATE = Number(window.CHILD_RATE || 0.5);
+
+        // Debug (enlève après)
+        console.log("AVAILABLE_SEATS:", AVAILABLE_SEATS.length, AVAILABLE_SEATS[0]);
+
+        const seatMap = document.getElementById('seatMap');
         const btnReset = document.getElementById('btnReset');
-        const alertDuplicate = document.getElementById('alertDuplicate');
+
         const btnSubmit = document.getElementById('btnSubmit');
+        const alertNoSeat = document.getElementById('alertNoSeat');
+        const alertBadSplit = document.getElementById('alertBadSplit');
 
         const recapSeats = document.getElementById('recapSeats');
         const recapCount = document.getElementById('recapCount');
         const recapTotal = document.getElementById('recapTotal');
 
-        // ✅ Convertit en options
+        const hiddenInputs = document.getElementById('hiddenInputs');
+        const assignList = document.getElementById('assignList');
+
+        const types = ['STANDARD', 'PREMIUM', 'VIP'];
+
+        const cnt = {
+            STANDARD: document.getElementById('cntSTANDARD'),
+            PREMIUM: document.getElementById('cntPREMIUM'),
+            VIP: document.getElementById('cntVIP'),
+        };
+        const adultInput = {
+            STANDARD: document.getElementById('adultSTANDARD'),
+            PREMIUM: document.getElementById('adultPREMIUM'),
+            VIP: document.getElementById('adultVIP'),
+        };
+        const childCell = {
+            STANDARD: document.getElementById('childSTANDARD'),
+            PREMIUM: document.getElementById('childPREMIUM'),
+            VIP: document.getElementById('childVIP'),
+        };
+
+        // ---- Helpers ----
+        function seatRow(s) {
+            return String(s.rangee ?? s.row ?? s.ligne ?? s.rang ?? '');
+        }
+
+        function seatNumber(s) {
+            return s.numero ?? s.num ?? s.place ?? s.number ?? '';
+        }
+
         function seatLabel(s) {
-            // s.rangee + s.numero (adapte si tes champs sont différents)
-            return `${s.rangee}${s.numero}`;
+            return `${seatRow(s)}${seatNumber(s)}`;
         }
 
-        function buildSelect() {
-            const select = document.createElement('select');
-            select.className = 'form-select form-select-sm seat-select';
-            select.name = 'seatIds[]';
-            select.required = true;
+        // Normalise le type (tolérant si la BD contient "Vip", "V.I.P", "PREM", etc.)
+        function seatType(s) {
+            const t = String(s.type ?? s.typeSiege ?? '').toUpperCase().trim();
+            if (t.includes('VIP')) return 'VIP';
+            if (t.includes('PREM')) return 'PREMIUM';
+            return 'STANDARD';
+        }
 
-            const o0 = document.createElement('option');
-            o0.value = '';
-            o0.textContent = '-- Choisir un siège --';
-            select.appendChild(o0);
+        // ---- Build byRow map (rangee -> seats[]) ----
+        const seats = AVAILABLE_SEATS;
+        const byRow = new Map();
 
-            (Array.isArray(AVAILABLE_SEATS) ? AVAILABLE_SEATS : []).forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.textContent = seatLabel(s);
-                select.appendChild(opt);
+        seats.forEach(s => {
+            const r = seatRow(s);
+            if (!r) return; // évite les rows vides
+            if (!byRow.has(r)) byRow.set(r, []);
+            byRow.get(r).push(s);
+        });
+
+        for (const [r, arr] of byRow.entries()) {
+            arr.sort((a, b) => Number(seatNumber(a)) - Number(seatNumber(b)));
+        }
+
+        // ---- Sélection ----
+        const selected = new Map(); // seatId -> { seat, category: 'ADULT'|'CHILD' }
+
+        function ensureSelected(seat) {
+            if (!selected.has(seat.id)) {
+                selected.set(seat.id, { seat, category: 'ADULT' });
+
+                // ✅ Important: par défaut le siège sélectionné doit compter comme "Adulte"
+                const t = seatType(seat);
+                const currentAdult = Number(adultInput[t].value || 0);
+                adultInput[t].value = String(currentAdult + 1);
+            }
+        }
+
+
+        // ---- Render seat map ----
+        function renderMap() {
+            seatMap.innerHTML = '';
+            const rows = Array.from(byRow.keys()).sort(); // A,B,C...
+
+            rows.forEach(r => {
+                const line = document.createElement('div');
+                line.className = 'row-line';
+
+                const label = document.createElement('div');
+                label.className = 'row-label';
+                label.textContent = r;
+                line.appendChild(label);
+
+                const seatsWrap = document.createElement('div');
+                seatsWrap.className = 'seats';
+
+                (byRow.get(r) || []).forEach(s => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+
+                    const t = seatType(s); // VIP / PREMIUM / STANDARD
+                    btn.className = `seat-btn seat-${t.toLowerCase()}`;
+
+                    // Affichage numéro + tooltip
+                    btn.textContent = String(seatNumber(s));
+                    btn.title = `${seatLabel(s)} - ${t}`;
+
+                    btn.dataset.seatId = s.id;
+
+                    btn.addEventListener('click', () => {
+                        if (selected.has(s.id)) selected.delete(s.id);
+                        else ensureSelected(s);
+                        refreshAll();
+                    });
+
+                    seatsWrap.appendChild(btn);
+                });
+
+                line.appendChild(seatsWrap);
+                seatMap.appendChild(line);
+            });
+        }
+
+        function refreshSeatButtons() {
+            const btns = seatMap.querySelectorAll('.seat-btn');
+            btns.forEach(b => {
+                const id = b.dataset.seatId;
+                b.classList.toggle('seat-selected', selected.has(id));
+            });
+        }
+
+        function getSelectedByType() {
+            const map = { STANDARD: [], PREMIUM: [], VIP: [] };
+            selected.forEach(v => {
+                const t = seatType(v.seat);
+                if (!map[t]) map[t] = [];
+                map[t].push(v.seat);
+            });
+            types.forEach(t => map[t].sort((a, b) => seatLabel(a).localeCompare(seatLabel(b))));
+            return map;
+        }
+
+        // Répartition: on saisit Adultes, Enfants = sélectionnés - Adultes
+        function clampSplits() {
+            const selByType = getSelectedByType();
+            let ok = true;
+
+            types.forEach(t => {
+                const total = selByType[t].length;
+                let a = Number(adultInput[t].value || 0);
+
+                if (a < 0) a = 0;
+                if (a > total) { a = total; ok = false; }
+
+                adultInput[t].value = String(a);
+                const c = total - a;
+
+                childCell[t].textContent = String(c);
+                cnt[t].textContent = String(total);
             });
 
-            select.addEventListener('change', refresh);
-            return select;
+            alertBadSplit.classList.toggle('d-none', ok);
+            return ok;
         }
 
-        function addLine() {
-            const line = document.createElement('div');
-            line.className = 'seat-line';
+        // Auto-assign catégories par type selon répartition
+        function autoAssignCategories() {
+            const selByType = getSelectedByType();
 
-            const select = buildSelect();
+            types.forEach(t => {
+                const seatsT = selByType[t];
+                const adultCount = Number(adultInput[t].value || 0);
 
-            const btnRemove = document.createElement('button');
-            btnRemove.type = 'button';
-            btnRemove.className = 'btn btn-sm btn-outline-danger';
-            btnRemove.innerHTML = '<i class="fas fa-trash me-1"></i>Retirer';
-            btnRemove.addEventListener('click', () => {
-                line.remove();
-                refresh();
+                // par défaut: premiers = ADULT, reste = CHILD
+                seatsT.forEach((s, idx) => {
+                    const entry = selected.get(s.id);
+                    if (!entry) return;
+                    entry.category = (idx < adultCount) ? 'ADULT' : 'CHILD';
+                });
+            });
+        }
+
+        // Liste d’attribution (toggle par siège)
+        function renderAssignList() {
+            if (selected.size === 0) {
+                assignList.innerHTML = `<div class="mini">Sélectionne des sièges pour afficher la liste.</div>`;
+                return;
+            }
+
+            const selByType = getSelectedByType();
+            const container = document.createElement('div');
+
+            types.forEach(t => {
+                const seatsT = selByType[t];
+                if (seatsT.length === 0) return;
+
+                const header = document.createElement('div');
+                header.className = 'fw-bold mt-2 mb-1';
+                header.textContent = `${t} (${seatsT.length})`;
+                container.appendChild(header);
+
+                seatsT.forEach(s => {
+                    const entry = selected.get(s.id);
+
+                    const item = document.createElement('div');
+                    item.className = 'assign-item';
+
+                    const left = document.createElement('div');
+                    left.innerHTML = `<span class="pill">${seatLabel(s)}</span> <span class="mini">(${t})</span>`;
+                    item.appendChild(left);
+
+                    const toggle = document.createElement('select');
+                    toggle.className = 'form-select form-select-sm';
+                    toggle.style.width = '120px';
+                    toggle.innerHTML = `
+          <option value="ADULT">Adulte</option>
+          <option value="CHILD">Enfant</option>
+        `;
+                    toggle.value = entry?.category || 'ADULT';
+
+                    toggle.addEventListener('change', () => {
+                        entry.category = toggle.value;
+
+                        // Recalcule adultInput[t] selon le nombre réel d’ADULT dans ce type
+                        const adultReal = seatsT
+                            .map(x => selected.get(x.id))
+                            .filter(e => e?.category === 'ADULT').length;
+
+                        adultInput[t].value = String(adultReal);
+                        clampSplits();
+                        refreshRecapAndHidden();
+                    });
+
+                    item.appendChild(toggle);
+                    container.appendChild(item);
+                });
             });
 
-            line.appendChild(select);
-            line.appendChild(btnRemove);
-            seatLines.appendChild(line);
-
-            refresh();
+            assignList.innerHTML = '';
+            assignList.appendChild(container);
         }
 
-        function refresh() {
-            const selects = Array.from(seatLines.querySelectorAll('select'));
-            const values = selects.map(s => s.value).filter(v => v);
-
-            // duplicats ?
-            const hasDuplicate = (new Set(values)).size !== values.length;
-            alertDuplicate.classList.toggle('d-none', !hasDuplicate);
-
-            // recap
-            const idToSeat = new Map((AVAILABLE_SEATS || []).map(s => [s.id, s]));
-            const labels = values.map(id => idToSeat.get(id)).filter(Boolean).map(seatLabel);
+        function refreshRecapAndHidden() {
+            // recap seats labels (avec type)
+            const labels = [];
+            selected.forEach(v => {
+                const t = seatType(v.seat);
+                labels.push(`${seatLabel(v.seat)}(${t})`);
+            });
+            labels.sort((a, b) => a.localeCompare(b));
 
             recapSeats.textContent = labels.length ? labels.join(', ') : 'Aucun';
             recapCount.textContent = String(labels.length);
-            recapTotal.textContent = String(labels.length * PRIX);
 
-            // submit ok ?
-            btnSubmit.disabled = (labels.length === 0 || hasDuplicate);
+            // total (adult/enfant par siège)
+            let total = 0;
+            selected.forEach(v => {
+                const t = seatType(v.seat);
+                const priceAdult = Number(PRICES[t] || 0);
+                const price = (v.category === 'CHILD') ? (priceAdult * CHILD_RATE) : priceAdult;
+                total += price;
+            });
+            recapTotal.textContent = String(Math.round(total));
+
+            // hidden inputs: seatIds[] + seatCategory[seatId]
+            hiddenInputs.innerHTML = '';
+            selected.forEach(v => {
+                const inSeat = document.createElement('input');
+                inSeat.type = 'hidden';
+                inSeat.name = 'seatIds[]';
+                inSeat.value = v.seat.id;
+                hiddenInputs.appendChild(inSeat);
+
+                const inCat = document.createElement('input');
+                inCat.type = 'hidden';
+                inCat.name = `seatCategory[${v.seat.id}]`; // Map<String,String> côté Spring
+                inCat.value = v.category; // ADULT / CHILD
+                hiddenInputs.appendChild(inCat);
+            });
+
+            const hasSeat = selected.size > 0;
+            alertNoSeat.classList.toggle('d-none', hasSeat);
+
+            const okSplit = clampSplits();
+            btnSubmit.disabled = !(hasSeat && okSplit);
         }
 
-        btnAddSeat.addEventListener('click', addLine);
+        function refreshAll() {
+            refreshSeatButtons();
 
-        btnReset.addEventListener('click', () => {
-            seatLines.innerHTML = '';
-            addLine(); // 1 ligne obligatoire
+            const okSplit = clampSplits();
+            if (okSplit) autoAssignCategories();
+
+            renderAssignList();
+            refreshRecapAndHidden();
+        }
+
+        // listeners sur adult inputs
+        types.forEach(t => {
+            adultInput[t].addEventListener('input', () => {
+                clampSplits();
+                autoAssignCategories();
+                renderAssignList();
+                refreshRecapAndHidden();
+            });
         });
 
-        // 1 ligne obligatoire au départ
-        addLine();
+        btnReset.addEventListener('click', () => {
+            selected.clear();
+            types.forEach(t => (adultInput[t].value = '0'));
+            refreshAll();
+        });
+
+        // init
+        renderMap();
+        refreshAll();
     });
     /*]]>*/
 </script>
+
 
 </body>
 </html>

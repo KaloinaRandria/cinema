@@ -622,3 +622,70 @@ SELECT
         END AS id_type_siege
 
 FROM generate_series(1, 100) gs;
+
+
+INSERT INTO societe_pub (id_societe_pub, nom, contact) VALUES
+                                                                 ('SOC001', 'Telma Madagascar', '0341122334'),
+                                                                 ('SOC002', 'Airtel Madagascar',  '0334455667'),
+                                                                 ('SOC003', 'Orange Madagascar',  '0327788990'),
+                                                                 ('SOC004', 'BFV Société Générale', '0349988776'),
+                                                                 ('SOC005', 'Star Madagascar',  '0325566778');
+
+
+INSERT INTO offre_pub (id_offre_pub, actif, libelle, prix_unitaire) VALUES
+                                                                       ('OFF001', true,'Spot 15 secondes',  50000),
+                                                                       ('OFF002', true,'Spot 30 secondes',  90000),
+                                                                       ('OFF003', true,'Spot 45 secondes',  130000),
+                                                                       ('OFF004', true,'Spot 60 secondes',  170000),
+                                                                       ('OFF005', true,'Pack premium (avant film)',  200000);
+
+
+INSERT INTO diffusion_pub (
+    id_diffusion_pub,
+    date_diffusion,
+    montant_total,
+    montant_unitaire,
+    nb_diffusions,
+    id_offre_pub,
+    id_seance,
+    id_societe_pub
+) VALUES
+-- Décembre 2025 (pour tester le C.A)
+('DPU001', '2025-12-05 18:00:00', 450000, 90000, 5, 'OFF002', 'SEA001', 'SOC001'),
+('DPU002', '2025-12-10 19:30:00', 150000, 50000, 3, 'OFF001', 'SEA002', 'SOC002'),
+('DPU003', '2025-12-15 20:00:00', 520000, 130000, 4, 'OFF003', 'SEA003', 'SOC003'),
+('DPU004', '2025-12-20 17:45:00', 720000, 120000, 6, 'OFF005', 'SEA004', 'SOC004'),
+('DPU005', '2025-12-28 21:00:00', 340000, 170000, 2, 'OFF004', 'SEA001', 'SOC005'),
+
+-- Janvier 2026
+('DPU006', '2026-01-04 18:30:00', 360000, 90000, 4, 'OFF002', 'SEA002', 'SOC001'),
+('DPU007', '2026-01-12 19:00:00', 300000, 50000, 6, 'OFF001', 'SEA003', 'SOC003');
+
+SELECT SUM(montant_total) AS ca_decembre_2025
+FROM diffusion_pub
+WHERE date_diffusion >= '2025-12-01'
+  AND date_diffusion < '2026-01-01';
+
+create sequence s_societe_pub increment by 1 no cycle;
+create sequence s_offre_pub increment by 1 no cycle;
+create sequence s_diffusion_pub increment by 1 no cycle;
+create sequence s_paiement_pub increment by 1 no cycle;
+
+create sequence s_reservation_extra increment by 1 no cycle;
+
+select sum(montant_total) as total
+from diffusion_pub where id_seance = 'SEA7';
+
+select
+    s.id_seance as id,
+    f.titre as titre,
+    s.debut,
+    sum(dp.montant_total) as pub,
+    rm.montant_total as resa,
+    (sum(dp.montant_total) + rm.montant_total) as total
+from seance s
+join public.diffusion_pub dp on s.id_seance = dp.id_seance
+join public.reservation_mere rm on s.id_seance = rm.id_seance
+join film f on s.id_film = f.id_film
+group by s.id_seance, rm.id_reservation_mere, f.id_film;
+

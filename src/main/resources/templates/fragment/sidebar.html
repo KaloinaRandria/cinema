@@ -105,6 +105,20 @@
                                 Programmer une séance
                             </a>
                         </li>
+                        <li>
+                            <a class="nav-link text-white d-flex align-items-center sidebar-link"
+                               th:href="@{/report/recettes-seances}"
+                               th:classappend="${currentUri.contains('/report/recettes-seances') ? 'active' : ''}">
+                                <i class="fas fa-chart-bar me-3"></i> Recettes séances
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link text-white d-flex align-items-center sidebar-link"
+                               th:href="@{/extras/add}"
+                               th:classappend="${currentUri.contains('/extras/add') ? 'active' : ''}">
+                                <i class="fas fa-chart-bar me-3"></i> Ajouter un extra
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -148,6 +162,82 @@
                                 <i class="fas fa-plus-circle me-2"></i> Ajouter une salle
                             </a>
                         </li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- PUBLICITÉ -->
+        <div class="accordion-item bg-transparent border-0">
+            <h2 class="accordion-header" id="headingPub">
+                <button class="accordion-button bg-transparent text-start text-white sidebar-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapsePub"
+                        aria-expanded="false"
+                        aria-controls="collapsePub"
+                        th:classappend="${currentUri.contains('/pub') ? '' : 'collapsed'}">
+                    <i class="fas fa-bullhorn me-3"></i> Publicité
+                </button>
+            </h2>
+
+            <div id="collapsePub"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="headingPub"
+                 data-bs-parent="#sidebarAccordion"
+                 th:classappend="${currentUri.contains('/pub') ? 'show' : ''}">
+                <div class="accordion-body p-0">
+                    <ul class="nav flex-column px-3">
+
+                        <!-- Liste des diffusions -->
+                        <li>
+                            <a class="nav-link text-white sidebar-sub"
+                               th:href="@{/pub/diffusions}"
+                               th:classappend="${currentUri == '/pub/diffusions' ? 'active' : ''}">
+                                <i class="fas fa-list me-2"></i> Diffusions
+                            </a>
+                        </li>
+
+                        <!-- Ajouter une diffusion -->
+                        <li>
+                            <a class="nav-link text-white sidebar-sub"
+                               sec:authorize="hasRole('ADMIN')"
+                               th:href="@{/pub/diffusions/add}"
+                               th:classappend="${currentUri == '/pub/diffusions/add' ? 'active' : ''}">
+                                <i class="fas fa-plus-circle me-2"></i> Nouvelle diffusion
+                            </a>
+                        </li>
+
+                        <!-- Chiffre d'affaires -->
+                        <li>
+                            <a class="nav-link text-white sidebar-sub"
+                               th:href="@{/pub/ca}"
+                               th:classappend="${currentUri.startsWith('/pub/ca') ? 'active' : ''}">
+                                <i class="fas fa-calculator me-2"></i> C.A Publicité
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link text-white sidebar-sub"
+                               th:href="@{/pub/paiements}"
+                               th:classappend="${currentUri.contains('/pub/paiements') ? 'active' : ''}">
+                                <i class="fas fa-cash-register me-2"></i> Paiements
+                            </a>
+                        </li>
+
+
+                        <li>
+                            <a class="nav-link text-white sidebar-sub"
+                               th:href="@{/pub/facturation}"
+                               th:classappend="${currentUri.contains('/pub/facturation') ? 'active' : ''}">
+                                <i class="fas fa-file-invoice-dollar me-2"></i> Facturation
+                            </a>
+                        </li>
+
+
+
+
 
                     </ul>
                 </div>
