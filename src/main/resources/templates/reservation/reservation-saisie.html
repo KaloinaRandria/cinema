@@ -317,8 +317,14 @@
         function ensureSelected(seat) {
             if (!selected.has(seat.id)) {
                 selected.set(seat.id, { seat, category: 'ADULT' });
+
+                // ✅ Important: par défaut le siège sélectionné doit compter comme "Adulte"
+                const t = seatType(seat);
+                const currentAdult = Number(adultInput[t].value || 0);
+                adultInput[t].value = String(currentAdult + 1);
             }
         }
+
 
         // ---- Render seat map ----
         function renderMap() {
